@@ -226,17 +226,45 @@ export default class App extends React.Component<object, State> {
 
         console.log('starting simulation');
 
-        // Initialize beach & last position counter
-        let beach: number[] = [];
-
+        let pastPos: number[][] = [];
         let results: number[][] = [];
-
-        for (let i = 0; i < this.state.length; i++) {
-            beach[i] = 0;
-        }
+        let kioskCount: number = 3;
 
         // TODO: Mit 3 ausprobieren
-        results = [[-1, -1, -1]];
+        for (let k = 0; k < kioskCount; k++) {
+            pastPos[k] = [];
+        }
+
+        let done: boolean = false;
+        while (!done) {
+            let beach: number[] = [];
+            for (let i = 0; i < this.state.length; i++) {
+                beach[i] = 0;
+            }
+
+            for (let k = 0; k < kioskCount; k++) {
+                // Find the first free spot
+                for (let i = 0; i < this.state.length; i++) {
+
+                    // Check if the position is free and this kiosk there never before
+                    if (beach[i] === 0 && pastPos[k].indexOf(i) === -1) {
+                        beach[i] = (k + 1);
+                        pastPos[k].push(i);
+                        break;
+                    }
+                }
+            }
+
+            results.push(beach);
+
+            done = true;
+            for (let k = 0; k < kioskCount; k++) {
+                if (pastPos[k].length !== this.state.length) {
+                    done = false;
+                    break;
+                }
+            }
+        }
 
         console.log('simulation finished');
 

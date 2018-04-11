@@ -46,6 +46,7 @@ body {
     margin: 15px;
     justify-self: center;
     /* width: 80vw; */
+    min-width: 50vw;
     border: 1px solid #000;
     padding: 10px;
 }
@@ -57,6 +58,7 @@ body {
 
 .App-results .result {
     margin: 5px;
+    padding: 5px;
     border-bottom: 1px solid gray;
 }
 
