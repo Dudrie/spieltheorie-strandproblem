@@ -14,7 +14,7 @@ interface State {
 }
 
 export default class App extends React.Component<object, State> {
-    private readonly DEF_LENGTH = 11;
+    private readonly DEF_LENGTH = 5;
     private readonly DEF_COUNT = 3;
 
     private notifcationSystem: RefObject<NotifcationSystem.System>;
@@ -226,51 +226,55 @@ export default class App extends React.Component<object, State> {
 
         console.log('starting simulation');
 
-        let pastPos: number[][] = [];
+        // let pastPos: number[][] = [];
         let results: number[][] = [];
-        let kioskCount: number = 3;
+        let startBeach: number[] = [];
 
-        // TODO: Mit 3 ausprobieren
-        for (let k = 0; k < kioskCount; k++) {
-            pastPos[k] = [];
+        for (let i = 0; i < this.state.length; i++) {
+            startBeach[i] = 0;
         }
 
-        let done: boolean = false;
-        while (!done) {
-            let beach: number[] = [];
-            for (let i = 0; i < this.state.length; i++) {
-                beach[i] = 0;
-            }
-
-            for (let k = 0; k < kioskCount; k++) {
-                // Find the first free spot
-                for (let i = 0; i < this.state.length; i++) {
-
-                    // Check if the position is free and this kiosk there never before
-                    if (beach[i] === 0 && pastPos[k].indexOf(i) === -1) {
-                        beach[i] = (k + 1);
-                        pastPos[k].push(i);
-                        break;
-                    }
-                }
-            }
-
-            results.push(beach);
-
-            done = true;
-            for (let k = 0; k < kioskCount; k++) {
-                if (pastPos[k].length !== this.state.length) {
-                    done = false;
-                    break;
-                }
-            }
+        for (let k = 0; k < this.state.count; k++) {
+            startBeach[k] = (k + 1);
         }
+
+        this.permutate(startBeach, startBeach.length, results);
 
         console.log('simulation finished');
 
         this.setState({
             results
         });
+    }
+
+    // TODO: Anstatt den String an sich zu permutieren (bzw. die Positionen) könnte man nicht auch einfach ein Array (number[count]) erstellen und die Positionen "durchprobieren"? So würde man das Problem, der permutierten 0en ggf. vermeiden.
+
+    private permutate(beachIn: number[], n: number, results: number[][]) {
+
+        if (n === 1) {
+            // Create a copy and add it
+            let beach: number[] = [];
+            beachIn.forEach((el, idx) => beach[idx] = el);
+            results.push(beach);
+
+        } else {
+            for (let i = 0; i < n - 1; i++) {
+                this.permutate(beachIn, n - 1, results);
+
+                let idxToSwapLastWith: number = 0;
+
+                if (n % 2 === 0) {
+                    idxToSwapLastWith = i;
+                }
+            }
+            this.permutate(beachIn, n - 1, results);
+        }
+    }
+
+    private swap(array: any[], i: number, k: number) {
+        let tmp: any = array[i];
+        array[i] = array[k];
+        array[k] = tmp;
     }
 
     private onSimulationReset() {
