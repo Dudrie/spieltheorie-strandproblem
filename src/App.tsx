@@ -226,19 +226,26 @@ export default class App extends React.Component<object, State> {
 
         console.log('starting simulation');
 
-        // let pastPos: number[][] = [];
         let results: number[][] = [];
-        let startBeach: number[] = [];
 
-        for (let i = 0; i < this.state.length; i++) {
-            startBeach[i] = 0;
-        }
+        let positions: number[] = [];
+        let maxPos: number = this.state.length - 1;
 
         for (let k = 0; k < this.state.count; k++) {
-            startBeach[k] = (k + 1);
+            positions[k] = 0;
         }
 
-        this.permutate(startBeach, startBeach.length, results);
+        while (positions[0] <= maxPos) {
+            this.addOnePosition(positions, positions.length - 1, maxPos);
+
+            let result: number[] = [];
+            positions.forEach((pos, idx) => result[idx] = pos);
+
+            // Search for duplicates. If there are any, don't add it
+            if (!this.hasDuplicateEntries(result)) {
+                results.push(result);
+            }
+        }
 
         console.log('simulation finished');
 
@@ -247,35 +254,61 @@ export default class App extends React.Component<object, State> {
         });
     }
 
-    // TODO: Anstatt den String an sich zu permutieren (bzw. die Positionen) könnte man nicht auch einfach ein Array (number[count]) erstellen und die Positionen "durchprobieren"? So würde man das Problem, der permutierten 0en ggf. vermeiden.
+    private addOnePosition(positions: number[], idx: number, maxPos: number) {
+        if (idx === 0) {
+            positions[0] = positions[0] + 1;
+            return;
+        }
 
-    private permutate(beachIn: number[], n: number, results: number[][]) {
+        positions[idx] = positions[idx] + 1;
 
-        if (n === 1) {
-            // Create a copy and add it
-            let beach: number[] = [];
-            beachIn.forEach((el, idx) => beach[idx] = el);
-            results.push(beach);
-
-        } else {
-            for (let i = 0; i < n - 1; i++) {
-                this.permutate(beachIn, n - 1, results);
-
-                let idxToSwapLastWith: number = 0;
-
-                if (n % 2 === 0) {
-                    idxToSwapLastWith = i;
-                }
-            }
-            this.permutate(beachIn, n - 1, results);
+        if (positions[idx] > maxPos) {
+            // We are hight than the maximal posible position
+            positions[idx] = 0;
+            this.addOnePosition(positions, idx - 1, maxPos);
         }
     }
 
-    private swap(array: any[], i: number, k: number) {
-        let tmp: any = array[i];
-        array[i] = array[k];
-        array[k] = tmp;
+    private hasDuplicateEntries(array: number[]): boolean {
+        for (let i = 0; i < array.length - 1; i++) {
+            if (array.indexOf(array[i], i + 1) !== -1) {
+                // Found a duplicate
+                return true;
+            }
+        }
+
+        return false;
     }
+
+    // TODO: Anstatt den String an sich zu permutieren (bzw. die Positionen) könnte man nicht auch einfach ein Array (number[count]) erstellen und die Positionen "durchprobieren"? So würde man das Problem, der permutierten 0en ggf. vermeiden.
+
+    // private permutate(beachIn: number[], n: number, results: number[][]) {
+
+    //     if (n === 1) {
+    //         // Create a copy and add it
+    //         let beach: number[] = [];
+    //         beachIn.forEach((el, idx) => beach[idx] = el);
+    //         results.push(beach);
+
+    //     } else {
+    //         for (let i = 0; i < n - 1; i++) {
+    //             this.permutate(beachIn, n - 1, results);
+
+    //             let idxToSwapLastWith: number = 0;
+
+    //             if (n % 2 === 0) {
+    //                 idxToSwapLastWith = i;
+    //             }
+    //         }
+    //         this.permutate(beachIn, n - 1, results);
+    //     }
+    // }
+
+    // private swap(array: any[], i: number, k: number) {
+    //     let tmp: any = array[i];
+    //     array[i] = array[k];
+    //     array[k] = tmp;
+    // }
 
     private onSimulationReset() {
         this.setState({
