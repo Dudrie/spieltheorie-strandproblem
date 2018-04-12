@@ -7,15 +7,19 @@ import './style.css';
 
 interface State {
     results: number[][];
+    resultJsxs: JSX.Element[];
     lengthStr: string;
     countStr: string;
     length: number;
     count: number;
 }
 
+// TODO: Ladehinweis anzeigen :)
+//          -> Simulation in Worker verschieben?!
 export default class App extends React.Component<object, State> {
-    private readonly DEF_LENGTH = 5;
+    private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
+    private readonly CRIT_SIZE = 12;
 
     private notifcationSystem: RefObject<NotifcationSystem.System>;
 
@@ -33,6 +37,7 @@ export default class App extends React.Component<object, State> {
 
         this.state = {
             results: [],
+            resultJsxs: [],
             lengthStr: this.DEF_LENGTH + '',
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
@@ -48,13 +53,7 @@ export default class App extends React.Component<object, State> {
     }
 
     render() {
-        let btnDisabled: boolean = this.state.length <= 0 || this.state.count <= 0;
-
-        let resultEls: JSX.Element[] = [];
-
-        this.state.results.forEach((result, idx) => {
-            resultEls.push(<div key={'result-' + idx} className='result'>{result}</div>);
-        });
+        let btnDisabled: boolean = this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
 
         return (
             <div className='App'>
@@ -73,10 +72,10 @@ export default class App extends React.Component<object, State> {
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
-                {resultEls.length > 0 && <div className='App-results'>
+                {this.state.resultJsxs.length > 0 && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
                     <div>
-                        {resultEls}
+                        {this.state.resultJsxs}
                     </div>
                 </div>}
 
@@ -205,10 +204,10 @@ export default class App extends React.Component<object, State> {
                 this.errorInputInvalidNoti = null;
             }
 
-            if (length > 50 || count > 50) {
+            if (length >= this.CRIT_SIZE || count >= this.CRIT_SIZE) {
                 this.showNotification(
                     'Warnung - Eingaben zu hoch',
-                    'Mindestens eine Eingabe ist größer als 50. Dies kann zu einer langen Berechnungsdauer führen.',
+                    'Mindestens eine Eingabe ist größer als oder gleich wie' + this.CRIT_SIZE + '. Dies kann zu einer längeren Berechnungsdauer führen.',
                     'info',
                     null,
                     8
@@ -217,6 +216,32 @@ export default class App extends React.Component<object, State> {
         }
 
         return true;
+    }
+
+    private addOnePosition(positions: number[], idx: number, maxPos: number) {
+        if (idx === 0) {
+            positions[0] = positions[0] + 1;
+            return;
+        }
+
+        positions[idx] = positions[idx] + 1;
+
+        if (positions[idx] > maxPos) {
+            // We are hight than the maximal posible position
+            positions[idx] = 0;
+            this.addOnePosition(positions, idx - 1, maxPos);
+        }
+    }
+
+    private hasDuplicateEntries(array: number[]): boolean {
+        for (let i = 0; i < array.length - 1; i++) {
+            if (array.indexOf(array[i], i + 1) !== -1) {
+                // Found a duplicate
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private onSimulationStart() {
@@ -250,65 +275,10 @@ export default class App extends React.Component<object, State> {
         console.log('simulation finished');
 
         this.setState({
-            results
+            results,
+            resultJsxs: this.generateJsxElements(results)
         });
     }
-
-    private addOnePosition(positions: number[], idx: number, maxPos: number) {
-        if (idx === 0) {
-            positions[0] = positions[0] + 1;
-            return;
-        }
-
-        positions[idx] = positions[idx] + 1;
-
-        if (positions[idx] > maxPos) {
-            // We are hight than the maximal posible position
-            positions[idx] = 0;
-            this.addOnePosition(positions, idx - 1, maxPos);
-        }
-    }
-
-    private hasDuplicateEntries(array: number[]): boolean {
-        for (let i = 0; i < array.length - 1; i++) {
-            if (array.indexOf(array[i], i + 1) !== -1) {
-                // Found a duplicate
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // TODO: Anstatt den String an sich zu permutieren (bzw. die Positionen) könnte man nicht auch einfach ein Array (number[count]) erstellen und die Positionen "durchprobieren"? So würde man das Problem, der permutierten 0en ggf. vermeiden.
-
-    // private permutate(beachIn: number[], n: number, results: number[][]) {
-
-    //     if (n === 1) {
-    //         // Create a copy and add it
-    //         let beach: number[] = [];
-    //         beachIn.forEach((el, idx) => beach[idx] = el);
-    //         results.push(beach);
-
-    //     } else {
-    //         for (let i = 0; i < n - 1; i++) {
-    //             this.permutate(beachIn, n - 1, results);
-
-    //             let idxToSwapLastWith: number = 0;
-
-    //             if (n % 2 === 0) {
-    //                 idxToSwapLastWith = i;
-    //             }
-    //         }
-    //         this.permutate(beachIn, n - 1, results);
-    //     }
-    // }
-
-    // private swap(array: any[], i: number, k: number) {
-    //     let tmp: any = array[i];
-    //     array[i] = array[k];
-    //     array[k] = tmp;
-    // }
 
     private onSimulationReset() {
         this.setState({
@@ -318,6 +288,31 @@ export default class App extends React.Component<object, State> {
             count: this.DEF_COUNT,
             countStr: this.DEF_COUNT + ''
         });
+    }
+
+    private generateJsxElements(results: number[][]): JSX.Element[] {
+        let resultEls: JSX.Element[] = [];
+
+        results.forEach((result, idx) => {
+            let row: JSX.Element[] = [];
+
+            for (let i = 0; i < this.state.length; i++) {
+                let idxSpot: number = result.indexOf(i);
+                let addClassName: string = 'empty';
+                let text: string = '-';
+
+                if (idxSpot !== -1) {
+                    text = (idxSpot + 1) + '';
+                    addClassName = '';
+                }
+
+                row.push(<span key={'result-spot-' + i + '-' + idx} className={'result-spot ' + addClassName} >{text}</span>);
+            }
+
+            resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
+        });
+
+        return resultEls;
     }
 
     private showNotification(title: string, message: string | JSX.Element, level: 'error' | 'warning' | 'info' | 'success', oldNoti: NotifcationSystem.Notification | null, autoDismiss: number = 0): NotifcationSystem.Notification | null {
