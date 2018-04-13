@@ -6,13 +6,16 @@ import { RefObject } from 'react';
 import './style.css';
 
 interface State {
-    results: number[][];
+    results: ResultType[];
     resultJsxs: JSX.Element[];
+    isSimulating: boolean;
     lengthStr: string;
     countStr: string;
     length: number;
     count: number;
 }
+
+type ResultType = { positions: number[], customers: number[] };
 
 // TODO: Ladehinweis anzeigen :)
 //          -> Simulation in Worker verschieben?!
@@ -39,6 +42,7 @@ export default class App extends React.Component<object, State> {
         this.state = {
             results: [],
             resultJsxs: [],
+            isSimulating: false,
             lengthStr: this.DEF_LENGTH + '',
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
@@ -54,7 +58,7 @@ export default class App extends React.Component<object, State> {
     }
 
     render() {
-        let btnDisabled: boolean = this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
+        let btnDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
 
         return (
             <div className='App'>
@@ -64,10 +68,10 @@ export default class App extends React.Component<object, State> {
 
                 <div className='App-inputs'>
                     <label>
-                        Strandlänge: <input ref={this.inLength} type='text' value={this.state.lengthStr} onChange={this.onInLengthChanged} />
+                        Strandlänge: <input ref={this.inLength} disabled={this.state.isSimulating} type='text' value={this.state.lengthStr} onChange={this.onInLengthChanged} />
                     </label>
                     <label>
-                        Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} />
+                        Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
                     <button disabled={btnDisabled} onClick={this.onSimulationStart.bind(this)}>Starte Simulation</button>
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
@@ -251,8 +255,9 @@ export default class App extends React.Component<object, State> {
         }
 
         console.log('starting simulation');
+        this.setState({ isSimulating: true });
 
-        let results: number[][] = [];
+        let results: ResultType[] = [];
 
         let positions: number[] = [];
         let maxPos: number = this.state.length - 1;
@@ -269,21 +274,69 @@ export default class App extends React.Component<object, State> {
 
             // Search for duplicates. If there are any, don't add it
             if (!this.hasDuplicateEntries(result)) {
-                results.push(result);
+                results.push({
+                    positions: result,
+                    customers: []
+                });
             }
         }
+
+        console.log('positions set');
+
+        // Calculate the amount of customers everybody gets.
+        console.log('calculate customers');
+        results.forEach((result) => {
+            let customers: number[] = [];
+            let lastKioskPos: number = -1;
+
+            for (let i = 0; i < this.state.length; i++) {
+                let idxKiosk: number = result.positions.indexOf(i);
+                let idxLastKiosk: number = result.positions.indexOf(lastKioskPos);
+
+                if (idxKiosk !== -1) {
+                    // We found a kiosk at the given spot. Calculate it's customers
+                    let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosk
+
+                    if (lastKioskPos === -1) {
+                        // We found the FIRST kiosk, so just add all spots and his own
+                        customers[idxKiosk] = spotsBetween + 1;
+
+                    } else {
+                        // We found an additional one, so do some calculation magic
+                        customers[idxKiosk] = (spotsBetween / 2) + 1;
+                        customers[idxLastKiosk] = customers[idxLastKiosk] + (spotsBetween / 2);
+
+                    }
+
+                    lastKioskPos = i;
+                }
+
+                if (i === this.state.length - 1) {
+                    // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
+                    customers[idxLastKiosk] = customers[idxLastKiosk] + (this.state.length - 1 - lastKioskPos);
+                    console.log(idxLastKiosk, customers[idxLastKiosk]);
+                }
+            }
+
+            result.customers = customers;
+
+            console.log('R ' + result.customers);
+        });
 
         console.log('simulation finished');
 
         this.setState({
             results,
-            resultJsxs: this.generateJsxElements(results)
+            resultJsxs: this.generateJsxElements(results),
+            isSimulating: false
         });
     }
 
     private onSimulationReset() {
         this.setState({
             results: [],
+            resultJsxs: [],
+            isSimulating: false,
             length: this.DEF_LENGTH,
             lengthStr: this.DEF_LENGTH + '',
             count: this.DEF_COUNT,
@@ -291,14 +344,15 @@ export default class App extends React.Component<object, State> {
         });
     }
 
-    private generateJsxElements(results: number[][]): JSX.Element[] {
+    private generateJsxElements(results: ResultType[]): JSX.Element[] {
         let resultEls: JSX.Element[] = [];
 
         results.forEach((result, idx) => {
+            let positions = result.positions;
             let row: JSX.Element[] = [];
 
             for (let i = 0; i < this.state.length; i++) {
-                let idxSpot: number = result.indexOf(i);
+                let idxSpot: number = positions.indexOf(i);
                 let addClassName: string = 'empty';
                 let text: string = '-';
 
@@ -309,6 +363,16 @@ export default class App extends React.Component<object, State> {
 
                 row.push(<span key={'result-spot-' + i + '-' + idx} className={'result-spot ' + addClassName} >{text}</span>);
             }
+
+            let customerJsx: JSX.Element[] = [];
+
+            result.customers.forEach((cust, i) => {
+                customerJsx.push(<span key={'cust-' + idx + '-' + i} className='result-customer-count' >
+                    {'K' + (i + 1) + ': ' + cust}
+                </span>);
+            });
+
+            row.push(<div key={'result-customers-' + idx} className='result-customer-count-div' >{customerJsx}</div>);
 
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });

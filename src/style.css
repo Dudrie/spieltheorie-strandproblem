@@ -56,10 +56,10 @@ body {
     margin-bottom: 10px;
 }
 
-.App-results .result {
+.result {
     margin: 5px;
     padding: 5px;
-    border-bottom: 1px solid gray;
+    border-bottom: 1px solid rgb(37, 37, 37);
 }
 
 .App-results .result-spot {
@@ -73,6 +73,25 @@ body {
     padding: 2px;
     text-align: center;
     text-justify: center;   
+}
+
+.App-results .result-customer-count-div {
+    margin-top: 5px;
+}
+
+.App-results .result-customer-count {
+    padding-right: 7px;
+    padding-left: 7px;
+    border-right: 1px solid grey;
+}
+
+.App-results .result-customer-count:first-of-type {
+    padding-left: 0px;
+}
+
+.App-results .result-customer-count:last-of-type {
+    padding-right: 0px;
+    border-right: none;
 }
 
 .App-results .empty {
