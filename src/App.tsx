@@ -21,8 +21,8 @@ type ResultType = { positions: number[], customers: number[] };
 
 // TODO: Filter vervollständigen
 // TODO: Link zum GitHub Code einbauen
-// TODO: Ladehinweis anzeigen :)
-//          -> Simulation in Worker verschieben?!
+// TODO: Simulation in Worker verschieben!
+//          -> Dann kann die Simulation auch abgebrochen werden
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
