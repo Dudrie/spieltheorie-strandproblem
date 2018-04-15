@@ -19,7 +19,8 @@ interface State {
 type FilterIdType = number | 'all' | 'noFilter';
 type ResultType = { positions: number[], customers: number[] };
 
-// TODO: Auswertung einbauen
+// TODO: Filter vervollständigen
+// TODO: Link zum GitHub Code einbauen
 // TODO: Ladehinweis anzeigen :)
 //          -> Simulation in Worker verschieben?!
 export default class App extends React.Component<object, State> {
