@@ -13,15 +13,17 @@ interface State {
     countStr: string;
     length: number;
     count: number;
+    filterId: FilterIdType;
 }
 
+type FilterIdType = number | 'all' | 'noFilter';
 type ResultType = { positions: number[], customers: number[] };
 
+// TODO: Auswertung einbauen
 // TODO: Ladehinweis anzeigen :)
 //          -> Simulation in Worker verschieben?!
-// TODO: Auswertung einbauen
 export default class App extends React.Component<object, State> {
-    private readonly DEF_LENGTH = 11;
+    private readonly DEF_LENGTH = 5;
     private readonly DEF_COUNT = 3;
     private readonly CRIT_SIZE = 12;
 
@@ -29,6 +31,7 @@ export default class App extends React.Component<object, State> {
 
     private inLength: RefObject<HTMLInputElement>;
     private inCount: RefObject<HTMLInputElement>;
+    private inSortNr: RefObject<HTMLInputElement>;
 
     private inLengthChangeTimer: NodeJS.Timer | null = null;
     private inLengthErrorNoti: NotifcationSystem.Notification | null = null;
@@ -46,24 +49,28 @@ export default class App extends React.Component<object, State> {
             lengthStr: this.DEF_LENGTH + '',
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
-            count: this.DEF_COUNT
+            count: this.DEF_COUNT,
+            filterId: 'noFilter'
         };
 
         this.notifcationSystem = React.createRef();
         this.inLength = React.createRef();
         this.inCount = React.createRef();
+        this.inSortNr = React.createRef();
 
         this.onInLengthChanged = this.onInLengthChanged.bind(this);
         this.onInCountChanged = this.onInCountChanged.bind(this);
+        this.onSortByKioskClicked = this.onSortByKioskClicked.bind(this);
+        this.onSortResetClicked = this.onSortResetClicked.bind(this);
     }
 
     render() {
-        let btnDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
+        let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
 
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v 0.1)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v0.1)</h1>
                 </header>
 
                 <div className='App-inputs'>
@@ -73,12 +80,23 @@ export default class App extends React.Component<object, State> {
                     <label>
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
-                    <button disabled={btnDisabled} onClick={this.onSimulationStart.bind(this)}>Starte Simulation</button>
+                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Starte Simulation</button>
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
                 {this.state.resultJsxs.length > 0 && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
+                    <div className='div-filter' >
+                        <span>Sortieren:</span>
+                        <label>
+                            <input ref={this.inSortNr} type='text' placeholder='Kiosk Nr.' className='filter-input' />
+                        </label>
+                        <button onClick={this.onSortByKioskClicked} >Sortiere</button>
+                        <span>|</span>
+                        <button disabled>Alle</button>
+                        <span>|</span>
+                        <button onClick={this.onSortResetClicked} >Zurücksetzen</button>
+                    </div>
                     <div>
                         {this.state.resultJsxs}
                     </div>
@@ -314,20 +332,20 @@ export default class App extends React.Component<object, State> {
                 if (i === this.state.length - 1) {
                     // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
                     customers[idxLastKiosk] = customers[idxLastKiosk] + (this.state.length - 1 - lastKioskPos);
-                    console.log(idxLastKiosk, customers[idxLastKiosk]);
+                    // console.log(idxLastKiosk, customers[idxLastKiosk]);
                 }
             }
 
             result.customers = customers;
 
-            console.log('R ' + result.customers);
+            // console.log('R ' + result.customers);
         });
 
         console.log('simulation finished');
 
         this.setState({
             results,
-            resultJsxs: this.generateJsxElements(results),
+            resultJsxs: this.generateJsxElements(results, this.state.filterId),
             isSimulating: false
         });
     }
@@ -344,10 +362,73 @@ export default class App extends React.Component<object, State> {
         });
     }
 
-    private generateJsxElements(results: ResultType[]): JSX.Element[] {
-        let resultEls: JSX.Element[] = [];
+    private onSortByKioskClicked() {
+        if (!this.inSortNr.current) {
+            return;
+        }
 
-        results.forEach((result, idx) => {
+        let kioskNr: number = Number.parseInt(this.inSortNr.current.value);
+
+        // We'll subtract one from the kioskNr later to map the number to the actual index.
+        if (Number.isNaN(kioskNr)) {
+            this.showNotification(
+                'Fehler - Kiosk Nr. ungültig',
+                'Die angegebene Kiosk Nummer (' + this.inSortNr.current.value + ') ist keine Zahl.',
+                'error',
+                null
+            );
+
+            return;
+        }
+
+        if (kioskNr > this.state.count || kioskNr <= 0) {
+            // TODO: Fehlermeldung anzeigen
+            this.showNotification(
+                'Fehler - Kiosk Nr. ungültig',
+                'Die angegebene Kiosk Nummer (' + kioskNr + ') nicht im erforderlichen Bereich [1, ' + this.state.count + '].',
+                'error',
+                null
+            );
+            return;
+        }
+
+        let filterId: FilterIdType = kioskNr - 1;
+
+        // Don't sort again if the filter stays the same.
+        if (this.state.filterId === filterId) {
+            return;
+        }
+
+        this.setState({
+            filterId,
+            resultJsxs: this.generateJsxElements(this.state.results, filterId)
+        });
+    }
+
+    private onSortResetClicked() {
+        this.setState({
+            filterId: 'noFilter',
+            resultJsxs: this.generateJsxElements(this.state.results, 'noFilter')
+        });
+    }
+
+    private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
+        let resultEls: JSX.Element[] = [];
+        let usedResults: ResultType[] = results.slice(0);
+
+        // Check if we want to filter the results first.
+        if (filterId !== 'noFilter') {
+            if (filterId === 'all') {
+                // TODO: Implementiere 'all'-Filter
+
+            } else {
+                usedResults.sort((a: ResultType, b: ResultType) => {
+                    return b.customers[filterId] - a.customers[filterId];
+                });
+            }
+        }
+
+        usedResults.forEach((result, idx) => {
             let positions = result.positions;
             let row: JSX.Element[] = [];
 
@@ -367,9 +448,16 @@ export default class App extends React.Component<object, State> {
             let customerJsx: JSX.Element[] = [];
 
             result.customers.forEach((cust, i) => {
-                customerJsx.push(<span key={'cust-' + idx + '-' + i} className='result-customer-count' >
-                    {'K' + (i + 1) + ': ' + cust}
-                </span>);
+                let addClassName: string = '';
+                if (i === filterId) {
+                    addClassName += ' filtered-by';
+                }
+
+                customerJsx.push(
+                    <span key={'cust-' + idx + '-' + i} className={'result-customer-count' + addClassName} >
+                        {'K' + (i + 1) + ': ' + cust}
+                    </span>
+                );
             });
 
             row.push(<div key={'result-customers-' + idx} className='result-customer-count-div' >{customerJsx}</div>);
