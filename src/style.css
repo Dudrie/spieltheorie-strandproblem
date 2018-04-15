@@ -25,6 +25,12 @@ body {
     font-size: 1.5em;
 }
 
+.App-github a, .App-github a:hover, .App-github a:visited {
+    color: white;
+    border: none;
+    text-decoration: none;
+}
+
 .App-inputs label {
     width: 80vw;
     margin-right: 10px;
@@ -74,7 +80,7 @@ body {
     width: 35px;
     padding: 2px;
     text-align: center;
-    text-justify: center;   
+    text-justify: center;
 }
 
 .App-results .result-customer-count-div {
@@ -121,7 +127,7 @@ body {
     border: 1px solid gray;
 }
 
-.div-filter > * {
+.div-filter>* {
     margin-right: 8px;
 }
 

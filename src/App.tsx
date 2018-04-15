@@ -19,7 +19,6 @@ interface State {
 type FilterIdType = number | 'all' | 'noFilter';
 type ResultType = { positions: number[], customers: number[] };
 
-// FIXME: Bei 11-1 ist das letzte Ergebnis leer und es fehlt das '1. Ergebnis' (10 000 000 000)
 // TODO: Filter vervollständigen
 // TODO: Link zum GitHub Code einbauen
 // TODO: Ladehinweis anzeigen :)
@@ -27,7 +26,8 @@ type ResultType = { positions: number[], customers: number[] };
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
-    private readonly CRIT_SIZE = 12;
+    private readonly CRIT_SIZE_LENGTH = 20;
+    private readonly CRIT_SIZE_COUNT = 4;
 
     private notifcationSystem: RefObject<NotifcationSystem.System>;
 
@@ -60,6 +60,7 @@ export default class App extends React.Component<object, State> {
         this.inCount = React.createRef();
         this.inSortNr = React.createRef();
 
+        this.simulate = this.simulate.bind(this);
         this.onInLengthChanged = this.onInLengthChanged.bind(this);
         this.onInCountChanged = this.onInCountChanged.bind(this);
         this.onSortByKioskClicked = this.onSortByKioskClicked.bind(this);
@@ -72,7 +73,9 @@ export default class App extends React.Component<object, State> {
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.0)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.1)</h1>
+                    {/* TODO: Repo public machen. Link wieder einfügen */}
+                    {/* <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div> */}
                 </header>
 
                 <div className='App-inputs'>
@@ -86,7 +89,9 @@ export default class App extends React.Component<object, State> {
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
-                {this.state.resultJsxs.length > 0 && <div className='App-results'>
+                {this.state.isSimulating && <div className='App-results'>Simuliere...</div>}
+
+                {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
                     <div className='div-filter' >
                         <span>Sortieren:</span>
@@ -158,7 +163,7 @@ export default class App extends React.Component<object, State> {
             this.setState({
                 length
             });
-        }, 350);
+        }, 150);
     }
 
     private onInCountChanged(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -210,7 +215,7 @@ export default class App extends React.Component<object, State> {
             this.setState({
                 count
             });
-        }, 350);
+        }, 150);
     }
 
     private isValidInput(length: number, count: number): boolean {
@@ -231,10 +236,20 @@ export default class App extends React.Component<object, State> {
                 this.errorInputInvalidNoti = null;
             }
 
-            if (length >= this.CRIT_SIZE || count >= this.CRIT_SIZE) {
+            if (length > this.CRIT_SIZE_LENGTH && length !== this.state.length) {
+                this.showNotification(
+                    'Warnung - Eingabe zu hoch',
+                    'Die Länge des Strands ist länger als ' + this.CRIT_SIZE_LENGTH + '. Dies kann zu einer längeren Berechnungsdauer führen.',
+                    'info',
+                    null,
+                    8
+                );
+            }
+
+            if (count > this.CRIT_SIZE_COUNT && count !== this.state.count) {
                 this.showNotification(
                     'Warnung - Eingaben zu hoch',
-                    'Mindestens eine Eingabe ist größer als oder gleich wie' + this.CRIT_SIZE + '. Dies kann zu einer längeren Berechnungsdauer führen.',
+                    'Die Anzahl der Kiosks ist größer als ' + this.CRIT_SIZE_COUNT + '. Dies kann zu einer längeren Berechnungsdauer führen.',
                     'info',
                     null,
                     8
@@ -250,7 +265,13 @@ export default class App extends React.Component<object, State> {
             return;
         }
 
-        this.simulate();
+        this.setState({
+            results: [],
+            resultJsxs: [],
+            isSimulating: true
+        });
+
+        setTimeout(this.simulate, 20);
     }
 
     private onSimulationReset() {
@@ -285,7 +306,6 @@ export default class App extends React.Component<object, State> {
         }
 
         if (kioskNr > this.state.count || kioskNr <= 0) {
-            // TODO: Fehlermeldung anzeigen
             this.showNotification(
                 'Fehler - Kiosk Nr. ungültig',
                 'Die angegebene Kiosk Nummer (' + kioskNr + ') nicht im erforderlichen Bereich [1, ' + this.state.count + '].',
@@ -449,6 +469,9 @@ export default class App extends React.Component<object, State> {
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
+        console.log('generating jsx elements');
+        console.log('filtering started');
+
         // Check if we want to filter the results first.
         if (filterId !== 'noFilter') {
             if (filterId === 'all') {
@@ -460,6 +483,7 @@ export default class App extends React.Component<object, State> {
                 });
             }
         }
+        console.log('filtering finished');
 
         usedResults.forEach((result, idx) => {
             let positions = result.positions;
@@ -498,6 +522,7 @@ export default class App extends React.Component<object, State> {
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });
 
+        console.log('generating finished');
         return resultEls;
     }
 
