@@ -19,6 +19,7 @@ interface State {
 type FilterIdType = number | 'all' | 'noFilter';
 type ResultType = { positions: number[], customers: number[] };
 
+// FIXME: Bei 11-1 ist das letzte Ergebnis leer und es fehlt das '1. Ergebnis' (10 000 000 000)
 // TODO: Filter vervollständigen
 // TODO: Link zum GitHub Code einbauen
 // TODO: Ladehinweis anzeigen :)
