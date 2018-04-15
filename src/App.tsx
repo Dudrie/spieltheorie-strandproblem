@@ -135,7 +135,8 @@ export default class App extends React.Component<object, State> {
                         'Fehler - Länge ungültig',
                         'Der Länge des Strands muss eine positive, natürliche Zahl sein. Aktueller Wert: ' + val + '.',
                         'error',
-                        this.inLengthErrorNoti
+                        this.inLengthErrorNoti,
+                        0
                     );
 
                     if (this.errorInputInvalidNoti) {
@@ -186,7 +187,8 @@ export default class App extends React.Component<object, State> {
                         'Fehler - Anzahl ungültig',
                         'Die Anzahl der Kiosks muss eine positive, natürliche Zahl sein. Aktueller Wert: ' + val + '.',
                         'error',
-                        this.inCountErrorNoti
+                        this.inCountErrorNoti,
+                        0
                     );
 
                     if (this.errorInputInvalidNoti) {
@@ -218,7 +220,7 @@ export default class App extends React.Component<object, State> {
                 Strand: {length}, Kiosks: {count}
             </>;
 
-            this.errorInputInvalidNoti = this.showNotification('Fehler - Eingabe ungültig', msg, 'error', this.errorInputInvalidNoti);
+            this.errorInputInvalidNoti = this.showNotification('Fehler - Eingabe ungültig', msg, 'error', this.errorInputInvalidNoti, 0);
             return false;
         }
 
@@ -469,7 +471,7 @@ export default class App extends React.Component<object, State> {
         return resultEls;
     }
 
-    private showNotification(title: string, message: string | JSX.Element, level: 'error' | 'warning' | 'info' | 'success', oldNoti: NotifcationSystem.Notification | null, autoDismiss: number = 0): NotifcationSystem.Notification | null {
+    private showNotification(title: string, message: string | JSX.Element, level: 'error' | 'warning' | 'info' | 'success', oldNoti: NotifcationSystem.Notification | null, autoDismiss: number = 5): NotifcationSystem.Notification | null {
         if (!this.notifcationSystem.current) {
             return null;
         }
