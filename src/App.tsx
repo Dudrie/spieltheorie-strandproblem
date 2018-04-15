@@ -19,6 +19,9 @@ interface State {
 type FilterIdType = number | 'all' | 'noFilter';
 type ResultType = { positions: number[], customers: number[] };
 
+// TODO: Speicherverbrauch im State optimieren
+//          -> Kann man die Results besser speichern?
+//          -> Oder die JSX Elemente?
 // TODO: Filter vervollständigen
 // TODO: Link zum GitHub Code einbauen
 // TODO: Simulation in Worker verschieben!
