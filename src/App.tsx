@@ -24,7 +24,7 @@ type ResultType = { positions: number[], customers: number[] };
 // TODO: Ladehinweis anzeigen :)
 //          -> Simulation in Worker verschieben?!
 export default class App extends React.Component<object, State> {
-    private readonly DEF_LENGTH = 5;
+    private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
     private readonly CRIT_SIZE = 12;
 
