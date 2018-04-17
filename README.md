@@ -12,6 +12,7 @@ Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). M
 - Initial Release
 
 # Geplante Features
+- [ ] Simulation abbrechbar machen
 - [ ] Simulation auf Basis eines Entscheidungsbaum o.ä.
 
 # Contribute
