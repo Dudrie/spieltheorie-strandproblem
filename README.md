@@ -11,6 +11,10 @@ Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). M
 ## v1.0
 - Initial Release
 
+# Bisherige Features
+- Für die angegebene Strandlänge und die Anzahl der Kiosk werden alle Möglichkeiten ausgegeben, wie die Kiosks platziert werden
+- Für die platzierten Kiosks kann die Anzahl der Kunden (bzw. Kundenslots), die bedient werden, berechnet werden
+
 # Geplante Features
 - [ ] Simulation abbrechbar machen
 - [ ] Simulation auf Basis eines Entscheidungsbaum o.ä.
