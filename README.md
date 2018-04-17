@@ -12,7 +12,7 @@ Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). M
 - Initial Release
 
 # Geplante Features
-[ ] Simulation auf Basis eines Entscheidungsbaum o.ä.
+- [ ] Simulation auf Basis eines Entscheidungsbaum o.ä.
 
 # Contribute
 Das Webinterface basiert auf dem JS-Framework für UIs "React" (by Facebook) und ist fast vollständig in [Typescript](http://www.typescriptlang.org/) geschrieben. Der verwendete und hier erklärte Package-Manager ist [yarn](https://yarnpkg.com/lang/en/) - es kann aber genauso [npm](https://www.npmjs.com/) genutzt werden.
