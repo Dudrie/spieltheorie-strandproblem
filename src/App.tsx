@@ -77,8 +77,7 @@ export default class App extends React.Component<object, State> {
             <div className='App'>
                 <header className='App-header'>
                     <h1 className='App-title'>Spieltheorie - Strandproblem (v1.1)</h1>
-                    {/* TODO: Repo public machen. Link wieder einfügen */}
-                    {/* <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div> */}
+                    <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
                 <div className='App-inputs'>
