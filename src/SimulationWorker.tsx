@@ -12,36 +12,49 @@ let savedPositions: number[];
 
 // FIXME: Die Positionen für die spielerIds k>=1 werden nicht korrekt gespeichert. Sie bleiben beim Standardwert '-1'.
 worker.addEventListener('message', (ev) => {
-    console.log('Worker got data');
+    console.log('[WORKER] got data');
     let data: WorkerInputData = ev.data as WorkerInputData;
 
     if (!isSimulating) {
         isSimulating = true;
+        console.log('[WORKER] starting simulation');
         beachLength = data.length;
-        currentPositions = new Array(data.count).fill(-1);
-        savedPositions = new Array(data.count).fill(-1);
 
         let results = simulate(data.count);
 
-        console.log('Simlation done');
-        console.log('Pos');
-        console.log(savedPositions);
-        console.log('Customers');
-        console.log(results[0].customers);
-
+        // console.log('Pos');
+        // console.log(savedPositions);
+        // console.log('Customers');
+        // console.log(results[0].customers);
+        
+        console.log('[WORKER] simulation done -- sending results');
         let workerReturn: WorkerReturnData = {
             results,
         };
         worker.postMessage(workerReturn);
+        isSimulating = false;
     }
 });
 
 function simulate(plyCount: number): ResultType[] {
     let results: ResultType[] = [];
+    savedPositions = new Array(plyCount).fill(-1);
 
     // Simulate, considering player with ID 0 starts.
-    let customers: number[] = maxn(plyCount, 0, plyCount, plyCount);
-    
+    // let customers: number[] = maxn(plyCount, 0, plyCount, plyCount);
+    let customers: number[] = [];
+
+    for (let i = 0; i < plyCount; i++) {
+        currentPositions = new Array(plyCount).fill(-1);
+
+        for (let k = 0; k < i; k++) {
+            currentPositions[k] = savedPositions[k];
+
+        }
+
+        customers = maxn(plyCount - i, i, plyCount, plyCount - i);
+    }
+
     // After it, savedPositions should be the best positions while customers should be the customers for the kiosks.
     results.push({
         positions: savedPositions,

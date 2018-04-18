@@ -83,7 +83,7 @@ export default class App extends React.Component<object, State> {
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.2)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.3)</h1>
                     <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
@@ -348,23 +348,26 @@ export default class App extends React.Component<object, State> {
     }
 
     private simulate() {
-        console.log('starting simulation');
+        console.log('[APP] starting simulation');
         this.setState({ isSimulating: true });
 
         this.simulationWorker = new Worker();
         this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
 
         this.simulationWorker.onmessage = (msg) => {
-            console.log('APP got data');
+            console.log('[APP] got data');
             let data = msg.data as WorkerReturnData;
-
-            console.log(data.results[0]);
 
             this.setState({
                 results: data.results,
                 resultJsxs: this.generateJsxElements(data.results, this.state.filterId),
                 isSimulating: false
             });
+
+            if (this.simulationWorker) {
+                this.simulationWorker.terminate();
+                this.simulationWorker = null;
+            }
         };
 
         let workerInput: WorkerInputData = { length: this.state.length, count: this.state.count };
@@ -377,8 +380,8 @@ export default class App extends React.Component<object, State> {
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
-        console.log('generating jsx elements');
-        console.log('filtering started');
+        console.log('[APP] generating jsx elements');
+        console.log('[APP] filtering started');
 
         // Check if we want to filter the results first.
         if (filterId !== 'noFilter') {
@@ -391,7 +394,7 @@ export default class App extends React.Component<object, State> {
                 });
             }
         }
-        console.log('filtering finished');
+        console.log('[APP] filtering finished');
 
         usedResults.forEach((result, idx) => {
             let positions = result.positions;
@@ -430,7 +433,7 @@ export default class App extends React.Component<object, State> {
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });
 
-        console.log('generating finished');
+        console.log('[APP] jsx generation finished');
         return resultEls;
     }
 
