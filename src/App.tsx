@@ -24,13 +24,11 @@ interface State {
 export type FilterIdType = number | 'all' | 'noFilter';
 export type ResultType = { positions: number[], customers: number[] };
 
-// TODO: Speicherverbrauch im State optimieren
-//          -> Kann man die Results besser speichern?
-//          -> Oder die JSX Elemente?
+// TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
+//          -> Gute Idee?
+// TODO: Namen und Hinweis zur Vorlesung einbauen
+//          -> Footer
 // TODO: Filter vervollständigen
-// TODO: Link zum GitHub Code einbauen
-// TODO: Simulation in Worker verschieben!
-//          -> Dann kann die Simulation auch abgebrochen werden
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
@@ -74,11 +72,14 @@ export default class App extends React.Component<object, State> {
         this.onInCountChanged = this.onInCountChanged.bind(this);
         this.onSortByKioskClicked = this.onSortByKioskClicked.bind(this);
         this.onSortResetClicked = this.onSortResetClicked.bind(this);
+        this.onSimulationStart = this.onSimulationStart.bind(this);
+        this.onSimulationAbort = this.onSimulationAbort.bind(this);
+        this.onSimulationReset = this.onSimulationReset.bind(this);
     }
 
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
-        // let btnAbortDisabled: boolean = !this.state.isSimulating;
+        let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
             <div className='App'>
@@ -94,9 +95,9 @@ export default class App extends React.Component<object, State> {
                     <label>
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
-                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Simulation starten</button>
-                    {/* <button disabled={btnAbortDisabled}>Abbrechen</button> */}
-                    <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
+                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
+                    <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
+                    <button onClick={this.onSimulationReset}>Zurücksetzen</button>
                 </div>
 
                 {this.state.isSimulating && <div className='App-results'>
@@ -296,6 +297,31 @@ export default class App extends React.Component<object, State> {
             count: this.DEF_COUNT,
             countStr: this.DEF_COUNT + ''
         });
+    }
+
+    private onSimulationAbort() {
+        if (!this.state.isSimulating) {
+            // Nothing to abort here
+            return;
+        }
+
+        if (!this.simulationWorker) {
+            // No worker which could be aborted
+            return;
+        }
+
+        console.log('[APP] aborting simulation');
+        this.simulationWorker.terminate();
+        this.simulationWorker = null;
+
+        this.setState({
+            results: [],
+            resultJsxs: [],
+            isSimulating: false
+        });
+        console.log('[APP] simulation aborted');
+
+        this.showNotification('Simulation abgerochen', 'Die Simulation wurde erfolgreich abgebrochen', 'success', null);
     }
 
     private onSortByKioskClicked() {
