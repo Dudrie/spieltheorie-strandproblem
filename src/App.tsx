@@ -83,7 +83,7 @@ export default class App extends React.Component<object, State> {
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.1)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.2)</h1>
                     <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
