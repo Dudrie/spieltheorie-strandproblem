@@ -300,28 +300,7 @@ export default class App extends React.Component<object, State> {
     }
 
     private onSimulationAbort() {
-        if (!this.state.isSimulating) {
-            // Nothing to abort here
-            return;
-        }
-
-        if (!this.simulationWorker) {
-            // No worker which could be aborted
-            return;
-        }
-
-        console.log('[APP] aborting simulation');
-        this.simulationWorker.terminate();
-        this.simulationWorker = null;
-
-        this.setState({
-            results: [],
-            resultJsxs: [],
-            isSimulating: false
-        });
-        console.log('[APP] simulation aborted');
-
-        this.showNotification('Simulation abgerochen', 'Die Simulation wurde erfolgreich abgebrochen', 'success', null);
+        this.abortSimulation(true);
     }
 
     private onSortByKioskClicked() {
@@ -378,7 +357,17 @@ export default class App extends React.Component<object, State> {
         this.setState({ isSimulating: true });
 
         this.simulationWorker = new Worker();
-        this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
+        this.simulationWorker.onerror = (ev) => {
+            console.error('[ERROR-WORKER] -- ' + ev.message);
+
+            this.showNotification(
+                'Simulationsfehler',
+                'Während der Simulation ist ein Fehler aufgetreten. Sie wurde abgebrochen. Mehr Informationen sind in der Konsole zu finden.',
+                'error',
+                null
+            );
+            this.abortSimulation(false);
+        };
 
         this.simulationWorker.onmessage = (msg) => {
             console.log('[APP] got data');
@@ -398,6 +387,33 @@ export default class App extends React.Component<object, State> {
 
         let workerInput: WorkerInputData = { length: this.state.length, count: this.state.count };
         this.simulationWorker.postMessage(workerInput);
+    }
+
+    private abortSimulation(showNotification: boolean) {
+        if (!this.state.isSimulating) {
+            // Nothing to abort here
+            return;
+        }
+
+        if (!this.simulationWorker) {
+            // No worker which could be aborted
+            return;
+        }
+
+        console.log('[APP] aborting simulation');
+        this.simulationWorker.terminate();
+        this.simulationWorker = null;
+
+        this.setState({
+            results: [],
+            resultJsxs: [],
+            isSimulating: false
+        });
+        console.log('[APP] simulation aborted');
+
+        if (showNotification) {
+            this.showNotification('Simulation abgerochen', 'Die Simulation wurde erfolgreich abgebrochen', 'success', null);
+        }
     }
 
     private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
