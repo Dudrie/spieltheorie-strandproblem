@@ -22,61 +22,29 @@ worker.addEventListener('message', (ev) => {
     }
 });
 
+let savedTurn: number[] | null = null;
 function simulate(length: number, count: number): ResultType[] {
     let results: ResultType[] = [];
 
-    let positions: number[] = [];
-    let maxPos: number = length - 1;
+    // TODO: Simulation genauer aufschreiben
+    let maxDepth: number = count;
+    let someAwesomeButUselessNumber: number = max(maxDepth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
 
-    for (let k = 0; k < count; k++) {
-        positions[k] = 0;
+    if (savedTurn === null) {
+        // There are no additional turns
+    } else {
+        // Do Turn
     }
-
-    if (positions.length === 1) {
-        // The algorithem used in addOnePosition(..) misses the first result if positions only contains one element. We'll add this edge case 'manually'.
-        results.push({
-            positions: [positions[0]],
-            customers: []
-        });
-    }
-
-    let done: boolean = false;
-    while (!done) {
-        addOnePosition(positions, positions.length - 1, maxPos);
-        // console.log('P: ');
-        // console.log(positions);
-
-        let result: number[] = [];
-        positions.forEach((pos, idx) => result[idx] = pos);
-
-        // Search for duplicates. If there are any, don't add it
-        if (!hasDuplicateEntries(result)) {
-            results.push({
-                positions: result,
-                customers: []
-            });
-        }
-
-        // Check if we're done. The kiosk have to be positioned correctly in the last spots DESCENDING.
-        // We're assuming that we're done. If we find one kiosk which does not fit to the above we have to continue.
-        done = true;
-        for (let i = 0; i < positions.length; i++) {
-            if (positions[i] !== maxPos - i) {
-                done = false;
-                break;
-            }
-        }
-    }
-
-    console.log('positions set');
-
-    // Calculate the amount of customers everybody gets.
-    console.log('calculate customers');
-    results.forEach((result) => {
-        result.customers = calculateCustomers(result.positions, length);
-    });
 
     return results;
+}
+
+function max(depth: number, alpha: number, beta: number): number {
+
+}
+
+function min(depth: number, alpha: number, beta: number): number {
+
 }
 
 function calculateCustomers(positions: number[], length: number): number[] {
@@ -144,3 +112,60 @@ function hasDuplicateEntries(array: number[]): boolean {
 
     return false;
 }
+
+// function simulate_old(length: number, count: number): ResultType[] {
+//     let results: ResultType[] = [];
+
+//     let positions: number[] = [];
+//     let maxPos: number = length - 1;
+
+//     for (let k = 0; k < count; k++) {
+//         positions[k] = 0;
+//     }
+
+//     if (positions.length === 1) {
+//         // The algorithem used in addOnePosition(..) misses the first result if positions only contains one element. We'll add this edge case 'manually'.
+//         results.push({
+//             positions: [positions[0]],
+//             customers: []
+//         });
+//     }
+
+//     let done: boolean = false;
+//     while (!done) {
+//         addOnePosition(positions, positions.length - 1, maxPos);
+//         // console.log('P: ');
+//         // console.log(positions);
+
+//         let result: number[] = [];
+//         positions.forEach((pos, idx) => result[idx] = pos);
+
+//         // Search for duplicates. If there are any, don't add it
+//         if (!hasDuplicateEntries(result)) {
+//             results.push({
+//                 positions: result,
+//                 customers: []
+//             });
+//         }
+
+//         // Check if we're done. The kiosk have to be positioned correctly in the last spots DESCENDING.
+//         // We're assuming that we're done. If we find one kiosk which does not fit to the above we have to continue.
+//         done = true;
+//         for (let i = 0; i < positions.length; i++) {
+//             if (positions[i] !== maxPos - i) {
+//                 done = false;
+//                 break;
+//             }
+//         }
+//     }
+
+//     console.log('positions set');
+
+//     // Calculate the amount of customers everybody gets.
+//     console.log('calculate customers');
+//     results.forEach((result) => {
+//         result.customers = calculateCustomers(result.positions, length);
+//     });
+
+//     return results;
+// }
