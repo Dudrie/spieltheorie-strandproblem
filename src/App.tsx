@@ -78,7 +78,7 @@ export default class App extends React.Component<object, State> {
 
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
-        let btnAbortDisabled: boolean = !this.state.isSimulating;
+        // let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
             <div className='App'>
@@ -95,7 +95,7 @@ export default class App extends React.Component<object, State> {
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
                     <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Simulation starten</button>
-                    <button disabled={btnAbortDisabled}>Abbrechen</button>
+                    {/* <button disabled={btnAbortDisabled}>Abbrechen</button> */}
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
