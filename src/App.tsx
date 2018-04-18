@@ -34,8 +34,8 @@ export type ResultType = { positions: number[], customers: number[] };
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
-    private readonly CRIT_SIZE_LENGTH = 20;
-    private readonly CRIT_SIZE_COUNT = 4;
+    private readonly CRIT_SIZE_LENGTH = 15;
+    private readonly CRIT_SIZE_COUNT = 6;
 
     private simulationWorker: Worker | null = null;
 
