@@ -24,18 +24,16 @@ interface State {
 export type FilterIdType = number | 'all' | 'noFilter';
 export type ResultType = { positions: number[], customers: number[] };
 
-// TODO: Speicherverbrauch im State optimieren
-//          -> Kann man die Results besser speichern?
-//          -> Oder die JSX Elemente?
+// TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
+//          -> Gute Idee?
+// TODO: Namen und Hinweis zur Vorlesung einbauen
+//          -> Footer
 // TODO: Filter vervollständigen
-// TODO: Link zum GitHub Code einbauen
-// TODO: Simulation in Worker verschieben!
-//          -> Dann kann die Simulation auch abgebrochen werden
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
-    private readonly CRIT_SIZE_LENGTH = 20;
-    private readonly CRIT_SIZE_COUNT = 4;
+    private readonly CRIT_SIZE_LENGTH = 15;
+    private readonly CRIT_SIZE_COUNT = 6;
 
     private simulationWorker: Worker | null = null;
 
@@ -74,16 +72,19 @@ export default class App extends React.Component<object, State> {
         this.onInCountChanged = this.onInCountChanged.bind(this);
         this.onSortByKioskClicked = this.onSortByKioskClicked.bind(this);
         this.onSortResetClicked = this.onSortResetClicked.bind(this);
+        this.onSimulationStart = this.onSimulationStart.bind(this);
+        this.onSimulationAbort = this.onSimulationAbort.bind(this);
+        this.onSimulationReset = this.onSimulationReset.bind(this);
     }
 
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
-        // let btnAbortDisabled: boolean = !this.state.isSimulating;
+        let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.2)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.3)</h1>
                     <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
@@ -94,9 +95,9 @@ export default class App extends React.Component<object, State> {
                     <label>
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
-                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Simulation starten</button>
-                    {/* <button disabled={btnAbortDisabled}>Abbrechen</button> */}
-                    <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
+                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
+                    <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
+                    <button onClick={this.onSimulationReset}>Zurücksetzen</button>
                 </div>
 
                 {this.state.isSimulating && <div className='App-results'>
@@ -105,7 +106,7 @@ export default class App extends React.Component<object, State> {
 
                 {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
-                    <div className='div-filter' >
+                    {/* <div className='div-filter' >
                         <span>Sortieren:</span>
                         <label>
                             <input ref={this.inSortNr} type='text' placeholder='Kiosk Nr.' className='filter-input' />
@@ -115,7 +116,7 @@ export default class App extends React.Component<object, State> {
                         <button disabled>Alle</button>
                         <span>|</span>
                         <button onClick={this.onSortResetClicked} >Zurücksetzen</button>
-                    </div>
+                    </div> */}
                     <div>
                         {this.state.resultJsxs}
                     </div>
@@ -298,6 +299,31 @@ export default class App extends React.Component<object, State> {
         });
     }
 
+    private onSimulationAbort() {
+        if (!this.state.isSimulating) {
+            // Nothing to abort here
+            return;
+        }
+
+        if (!this.simulationWorker) {
+            // No worker which could be aborted
+            return;
+        }
+
+        console.log('[APP] aborting simulation');
+        this.simulationWorker.terminate();
+        this.simulationWorker = null;
+
+        this.setState({
+            results: [],
+            resultJsxs: [],
+            isSimulating: false
+        });
+        console.log('[APP] simulation aborted');
+
+        this.showNotification('Simulation abgerochen', 'Die Simulation wurde erfolgreich abgebrochen', 'success', null);
+    }
+
     private onSortByKioskClicked() {
         if (!this.inSortNr.current) {
             return;
@@ -348,14 +374,14 @@ export default class App extends React.Component<object, State> {
     }
 
     private simulate() {
-        console.log('starting simulation');
+        console.log('[APP] starting simulation');
         this.setState({ isSimulating: true });
 
         this.simulationWorker = new Worker();
         this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
 
         this.simulationWorker.onmessage = (msg) => {
-            console.log('APP got data');
+            console.log('[APP] got data');
             let data = msg.data as WorkerReturnData;
 
             this.setState({
@@ -363,6 +389,11 @@ export default class App extends React.Component<object, State> {
                 resultJsxs: this.generateJsxElements(data.results, this.state.filterId),
                 isSimulating: false
             });
+
+            if (this.simulationWorker) {
+                this.simulationWorker.terminate();
+                this.simulationWorker = null;
+            }
         };
 
         let workerInput: WorkerInputData = { length: this.state.length, count: this.state.count };
@@ -375,8 +406,8 @@ export default class App extends React.Component<object, State> {
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
-        console.log('generating jsx elements');
-        console.log('filtering started');
+        console.log('[APP] generating jsx elements');
+        console.log('[APP] filtering started');
 
         // Check if we want to filter the results first.
         if (filterId !== 'noFilter') {
@@ -389,7 +420,7 @@ export default class App extends React.Component<object, State> {
                 });
             }
         }
-        console.log('filtering finished');
+        console.log('[APP] filtering finished');
 
         usedResults.forEach((result, idx) => {
             let positions = result.positions;
@@ -428,7 +459,7 @@ export default class App extends React.Component<object, State> {
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });
 
-        console.log('generating finished');
+        console.log('[APP] jsx generation finished');
         return resultEls;
     }
 
@@ -446,7 +477,8 @@ export default class App extends React.Component<object, State> {
             children: message,
             level,
             dismissible: autoDismiss !== 0,
-            autoDismiss
+            autoDismiss,
+            position: 'tl'
         });
     }
 }
