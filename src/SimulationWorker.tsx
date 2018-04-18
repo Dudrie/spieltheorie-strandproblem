@@ -40,8 +40,8 @@ function simulate(plyCount: number): ResultType[] {
     let results: ResultType[] = [];
 
     // Simulate, considering player with ID 0 starts.
-    let customers = maxn(plyCount, 0, plyCount);
-
+    let customers: number[] = maxn(plyCount, 0, plyCount, plyCount);
+    
     // After it, savedPositions should be the best positions while customers should be the customers for the kiosks.
     results.push({
         positions: savedPositions,
@@ -51,13 +51,8 @@ function simulate(plyCount: number): ResultType[] {
     return results;
 }
 
-function maxn(depth: number, currentPly: number, plyCount: number): number[] {
+function maxn(depth: number, currentPly: number, plyCount: number, maxDepth: number): number[] {
     if (depth === 0) {
-        // let c = calculateCustomers();
-        // console.log('Ply: ' + currentPly);
-        // console.log(c);
-        // console.log('Position: ');
-        // console.log(savedPositions);
         return calculateCustomers();
     }
 
@@ -77,13 +72,13 @@ function maxn(depth: number, currentPly: number, plyCount: number): number[] {
         currentPositions[currentPly] = turn;
 
         // Go one level deeper in the tree and get the customers.
-        let customers = maxn(depth - 1, currentPly + 1, plyCount);
+        let customers = maxn(depth - 1, currentPly + 1, plyCount, maxDepth);
 
         // Check if this variant is better than the previous one (for the specific player!)
         if (compareCustomers(customers, bestCustomers, turn, bestPos, currentPly) > 0) {
             // It's better
             bestCustomers = customers;
-            if (depth === plyCount) {
+            if (depth === maxDepth) {
                 savedPositions = new Array(plyCount).fill(-1);
                 currentPositions.forEach((pos, idx) => savedPositions[idx] = pos);
             }
@@ -110,7 +105,7 @@ function calculateCustomers(): number[] {
 
         if (idxKiosk !== -1) {
             // We found a kiosk at the given spot. Calculate it's customers
-            let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosk
+            let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosks
 
             if (lastKioskPos === -1) {
                 // We found the FIRST kiosk, so just add all spots and his own
