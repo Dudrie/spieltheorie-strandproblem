@@ -8,6 +8,7 @@ import { RefObject } from 'react';
 import Worker = require('worker-loader!./SimulationWorker');
 
 import './style.css';
+import { WorkerReturnData, WorkerInputData } from './SimulationWorker';
 
 interface State {
     results: ResultType[];
@@ -20,7 +21,7 @@ interface State {
     filterId: FilterIdType;
 }
 
-type FilterIdType = number | 'all' | 'noFilter';
+export type FilterIdType = number | 'all' | 'noFilter';
 export type ResultType = { positions: number[], customers: number[] };
 
 // TODO: Speicherverbrauch im State optimieren
@@ -36,7 +37,7 @@ export default class App extends React.Component<object, State> {
     private readonly CRIT_SIZE_LENGTH = 20;
     private readonly CRIT_SIZE_COUNT = 4;
 
-    private simulationWorker: Worker;
+    private simulationWorker: Worker | null = null;
 
     private notifcationSystem: RefObject<NotifcationSystem.System>;
     private inLength: RefObject<HTMLInputElement>;
@@ -63,10 +64,6 @@ export default class App extends React.Component<object, State> {
             filterId: 'noFilter'
         };
 
-        this.simulationWorker = new Worker();
-        this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
-        this.simulationWorker.postMessage({ a: 'HI' });
-
         this.notifcationSystem = React.createRef();
         this.inLength = React.createRef();
         this.inCount = React.createRef();
@@ -81,13 +78,13 @@ export default class App extends React.Component<object, State> {
 
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
+        let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
             <div className='App'>
                 <header className='App-header'>
                     <h1 className='App-title'>Spieltheorie - Strandproblem (v1.1)</h1>
-                    {/* TODO: Repo public machen. Link wieder einfügen */}
-                    {/* <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div> */}
+                    <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
                 <div className='App-inputs'>
@@ -97,11 +94,14 @@ export default class App extends React.Component<object, State> {
                     <label>
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
-                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Starte Simulation</button>
+                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Simulation starten</button>
+                    <button disabled={btnAbortDisabled}>Abbrechen</button>
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
-                {this.state.isSimulating && <div className='App-results'>Simuliere...</div>}
+                {this.state.isSimulating && <div className='App-results'>
+                    <i className='fal fa-cog fa-spin'></i>Simuliere...
+                </div>}
 
                 {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
@@ -351,48 +351,27 @@ export default class App extends React.Component<object, State> {
         console.log('starting simulation');
         this.setState({ isSimulating: true });
 
-        // TODO: Worker starten/benachrichtigen
+        this.simulationWorker = new Worker();
+        this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
 
-        // console.log('simulation finished');
+        this.simulationWorker.onmessage = (msg) => {
+            console.log('APP got data');
+            let data = msg.data as WorkerReturnData;
 
-        // this.setState({
-        //     results,
-        //     resultJsxs: this.generateJsxElements(results, this.state.filterId),
-        //     isSimulating: false
-        // });
+            this.setState({
+                results: data.results,
+                resultJsxs: this.generateJsxElements(data.results, this.state.filterId),
+                isSimulating: false
+            });
+        };
+
+        let workerInput: WorkerInputData = { length: this.state.length, count: this.state.count };
+        this.simulationWorker.postMessage(workerInput);
     }
 
-    // private addOnePosition(positions: number[], idx: number, maxPos: number) {
-    //     if (idx === 0) {
-    //         // Only increase the first position if we're not at the max position.
-    //         if (positions[0] < maxPos) {
-    //             positions[0] = positions[0] + 1;
-    //         }
-
-    //         return;
-    //     }
-
-    //     positions[idx] = positions[idx] + 1;
-
-    //     if (positions[idx] > maxPos) {
-    //         // We are higher than the maximal posible position
-    //         positions[idx] = 0;
-    //         this.addOnePosition(positions, idx - 1, maxPos);
-    //     }
-    // }
-
-    // private hasDuplicateEntries(array: number[]): boolean {
-    //     for (let i = 0; i < array.length - 1; i++) {
-    //         if (array.indexOf(array[i], i + 1) !== -1) {
-    //             // Found a duplicate
-    //             return true;
-    //         }
-    //     }
-
-    //     return false;
-    // }
-
     private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
+        // TODO: Kann man das hier auch in den Worker verschieben?
+        //          -> Einfach so geht leider nicht.
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
