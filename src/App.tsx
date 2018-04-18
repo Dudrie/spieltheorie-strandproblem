@@ -358,6 +358,8 @@ export default class App extends React.Component<object, State> {
             console.log('APP got data');
             let data = msg.data as WorkerReturnData;
 
+            console.log(data.results[0]);
+
             this.setState({
                 results: data.results,
                 resultJsxs: this.generateJsxElements(data.results, this.state.filterId),

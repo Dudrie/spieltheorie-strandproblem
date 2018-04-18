@@ -6,14 +6,28 @@ export type WorkerInputData = { length: number; count: number; };
 export type WorkerReturnData = { results: ResultType[] };
 
 let isSimulating: boolean = false;
+let beachLength: number;
+let currentPositions: number[];
+let savedPositions: number[];
 
+// FIXME: Die Positionen für die spielerIds k>=1 werden nicht korrekt gespeichert. Sie bleiben beim Standardwert '-1'.
 worker.addEventListener('message', (ev) => {
     console.log('Worker got data');
     let data: WorkerInputData = ev.data as WorkerInputData;
 
     if (!isSimulating) {
         isSimulating = true;
-        let results = simulate(data.length, data.count);
+        beachLength = data.length;
+        currentPositions = new Array(data.count).fill(-1);
+        savedPositions = new Array(data.count).fill(-1);
+
+        let results = simulate(data.count);
+
+        console.log('Simlation done');
+        console.log('Pos');
+        console.log(savedPositions);
+        console.log('Customers');
+        console.log(results[0].customers);
 
         let workerReturn: WorkerReturnData = {
             results,
@@ -22,38 +36,77 @@ worker.addEventListener('message', (ev) => {
     }
 });
 
-let savedTurn: number[] | null = null;
-function simulate(length: number, count: number): ResultType[] {
+function simulate(plyCount: number): ResultType[] {
     let results: ResultType[] = [];
 
-    // TODO: Simulation genauer aufschreiben
-    let maxDepth: number = count;
-    let someAwesomeButUselessNumber: number = max(maxDepth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    // Simulate, considering player with ID 0 starts.
+    let customers = maxn(plyCount, 0, plyCount);
 
-    if (savedTurn === null) {
-        // There are no additional turns
-    } else {
-        // Do Turn
-    }
+    // After it, savedPositions should be the best positions while customers should be the customers for the kiosks.
+    results.push({
+        positions: savedPositions,
+        customers
+    });
 
     return results;
 }
 
-function max(depth: number, alpha: number, beta: number): number {
+function maxn(depth: number, currentPly: number, plyCount: number): number[] {
+    if (depth === 0) {
+        // let c = calculateCustomers();
+        // console.log('Ply: ' + currentPly);
+        // console.log(c);
+        // console.log('Position: ');
+        // console.log(savedPositions);
+        return calculateCustomers();
+    }
 
+    let bestCustomers: number[] = new Array(plyCount).fill(0);
+    let bestPos: number = Number.POSITIVE_INFINITY;
+    let turns: number[] = getPossibleSpots();
+
+    while (turns.length > 0) {
+        let turn: number | undefined = turns.pop();
+        // console.log('Turn: ' + turn);
+        if (turn === undefined) {
+            continue;
+        }
+
+        // Do the turn
+        let prevPos: number = currentPositions[currentPly];
+        currentPositions[currentPly] = turn;
+
+        // Go one level deeper in the tree and get the customers.
+        let customers = maxn(depth - 1, currentPly + 1, plyCount);
+
+        // Check if this variant is better than the previous one (for the specific player!)
+        if (compareCustomers(customers, bestCustomers, turn, bestPos, currentPly) > 0) {
+            // It's better
+            bestCustomers = customers;
+            if (depth === plyCount) {
+                savedPositions = new Array(plyCount).fill(-1);
+                currentPositions.forEach((pos, idx) => savedPositions[idx] = pos);
+            }
+        }
+
+        // Undo the turn made
+        currentPositions[currentPly] = prevPos;
+    }
+
+    return bestCustomers;
 }
 
-function min(depth: number, alpha: number, beta: number): number {
-
-}
-
-function calculateCustomers(positions: number[], length: number): number[] {
-    let customers: number[] = [];
+/**
+ * Returns the number of customers of every player as an array. Keys are the player IDs.
+ * @returns Array with the amount of customers per player
+ */
+function calculateCustomers(): number[] {
+    let customers: number[] = new Array(currentPositions.length).fill(0);
     let lastKioskPos: number = -1;
 
-    for (let i = 0; i < length; i++) {
-        let idxKiosk: number = positions.indexOf(i);
-        let idxLastKiosk: number = positions.indexOf(lastKioskPos);
+    for (let i = 0; i < beachLength; i++) {
+        let idxKiosk: number = currentPositions.indexOf(i);
+        let idxLastKiosk: number = currentPositions.indexOf(lastKioskPos);
 
         if (idxKiosk !== -1) {
             // We found a kiosk at the given spot. Calculate it's customers
@@ -73,9 +126,9 @@ function calculateCustomers(positions: number[], length: number): number[] {
             lastKioskPos = i;
         }
 
-        if (i === length - 1) {
+        if (i === beachLength - 1) {
             // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
-            customers[idxLastKiosk] = customers[idxLastKiosk] + (length - 1 - lastKioskPos);
+            customers[idxLastKiosk] = customers[idxLastKiosk] + (beachLength - 1 - lastKioskPos);
             // console.log(idxLastKiosk, customers[idxLastKiosk]);
         }
     }
@@ -83,89 +136,50 @@ function calculateCustomers(positions: number[], length: number): number[] {
     return customers;
 }
 
-function addOnePosition(positions: number[], idx: number, maxPos: number) {
-    if (idx === 0) {
-        // Only increase the first position if we're not at the max position.
-        if (positions[0] < maxPos) {
-            positions[0] = positions[0] + 1;
-        }
-
-        return;
+/**
+ * Compares the two customer-array in regards of the customer count and (if a tie occurs) on the basis of the positioning.
+ * @param c1 Customers now
+ * @param c2 Customers before
+ * @param pos1 Position now
+ * @param pos2 Positien before
+ * @param plyId ID of the player
+ */
+function compareCustomers(c1: number[], c2: number[], pos1: number, pos2: number, plyId: number, ): number {
+    if (c1[plyId] > c2[plyId]) {
+        return 1;
     }
 
-    positions[idx] = positions[idx] + 1;
-
-    if (positions[idx] > maxPos) {
-        // We are higher than the maximal posible position
-        positions[idx] = 0;
-        addOnePosition(positions, idx - 1, maxPos);
+    if (c1[plyId] < c2[plyId]) {
+        return -1;
     }
+
+    // Tie in regards of the customers, so let the position decide, but in descending manner (more on the left = better)
+    if (pos1 < pos2) {
+        return 1;
+    }
+
+    if (pos1 > pos2) {
+        return -1;
+    }
+
+    // The two customer counts are equall
+    return 0;
 }
 
-function hasDuplicateEntries(array: number[]): boolean {
-    for (let i = 0; i < array.length - 1; i++) {
-        if (array.indexOf(array[i], i + 1) !== -1) {
-            // Found a duplicate
-            return true;
+/**
+ * Returns an array containing all free spots (so all spots where the player can put it's kiosk).
+ * @returns Array containing all free spots.
+ */
+function getPossibleSpots(): number[] {
+    let freeSpots: number[] = [];
+
+    for (let i = 0; i < beachLength; i++) {
+        let idx = currentPositions.indexOf(i);
+
+        if (idx === -1) {
+            freeSpots.push(i);
         }
     }
 
-    return false;
+    return freeSpots;
 }
-
-// function simulate_old(length: number, count: number): ResultType[] {
-//     let results: ResultType[] = [];
-
-//     let positions: number[] = [];
-//     let maxPos: number = length - 1;
-
-//     for (let k = 0; k < count; k++) {
-//         positions[k] = 0;
-//     }
-
-//     if (positions.length === 1) {
-//         // The algorithem used in addOnePosition(..) misses the first result if positions only contains one element. We'll add this edge case 'manually'.
-//         results.push({
-//             positions: [positions[0]],
-//             customers: []
-//         });
-//     }
-
-//     let done: boolean = false;
-//     while (!done) {
-//         addOnePosition(positions, positions.length - 1, maxPos);
-//         // console.log('P: ');
-//         // console.log(positions);
-
-//         let result: number[] = [];
-//         positions.forEach((pos, idx) => result[idx] = pos);
-
-//         // Search for duplicates. If there are any, don't add it
-//         if (!hasDuplicateEntries(result)) {
-//             results.push({
-//                 positions: result,
-//                 customers: []
-//             });
-//         }
-
-//         // Check if we're done. The kiosk have to be positioned correctly in the last spots DESCENDING.
-//         // We're assuming that we're done. If we find one kiosk which does not fit to the above we have to continue.
-//         done = true;
-//         for (let i = 0; i < positions.length; i++) {
-//             if (positions[i] !== maxPos - i) {
-//                 done = false;
-//                 break;
-//             }
-//         }
-//     }
-
-//     console.log('positions set');
-
-//     // Calculate the amount of customers everybody gets.
-//     console.log('calculate customers');
-//     results.forEach((result) => {
-//         result.customers = calculateCustomers(result.positions, length);
-//     });
-
-//     return results;
-// }
