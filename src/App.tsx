@@ -3,7 +3,12 @@ import * as NotifcationSystem from 'react-notification-system';
 
 import { RefObject } from 'react';
 
+// Register the worker with the worker-loader (no replacement for this require-import found)
+// tslint:disable-next-line:no-require-imports
+import Worker = require('worker-loader!./SimulationWorker');
+
 import './style.css';
+import { WorkerReturnData, WorkerInputData } from './SimulationWorker';
 
 interface State {
     results: ResultType[];
@@ -16,8 +21,8 @@ interface State {
     filterId: FilterIdType;
 }
 
-type FilterIdType = number | 'all' | 'noFilter';
-type ResultType = { positions: number[], customers: number[] };
+export type FilterIdType = number | 'all' | 'noFilter';
+export type ResultType = { positions: number[], customers: number[] };
 
 // TODO: Speicherverbrauch im State optimieren
 //          -> Kann man die Results besser speichern?
@@ -32,8 +37,9 @@ export default class App extends React.Component<object, State> {
     private readonly CRIT_SIZE_LENGTH = 20;
     private readonly CRIT_SIZE_COUNT = 4;
 
-    private notifcationSystem: RefObject<NotifcationSystem.System>;
+    private simulationWorker: Worker | null = null;
 
+    private notifcationSystem: RefObject<NotifcationSystem.System>;
     private inLength: RefObject<HTMLInputElement>;
     private inCount: RefObject<HTMLInputElement>;
     private inSortNr: RefObject<HTMLInputElement>;
@@ -72,11 +78,12 @@ export default class App extends React.Component<object, State> {
 
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
+        let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.1)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.2)</h1>
                     <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
@@ -87,11 +94,14 @@ export default class App extends React.Component<object, State> {
                     <label>
                         Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
                     </label>
-                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Starte Simulation</button>
+                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart.bind(this)}>Simulation starten</button>
+                    <button disabled={btnAbortDisabled}>Abbrechen</button>
                     <button onClick={this.onSimulationReset.bind(this)}>Zurücksetzen</button>
                 </div>
 
-                {this.state.isSimulating && <div className='App-results'>Simuliere...</div>}
+                {this.state.isSimulating && <div className='App-results'>
+                    <i className='fal fa-cog fa-spin'></i>Simuliere...
+                </div>}
 
                 {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
@@ -341,133 +351,27 @@ export default class App extends React.Component<object, State> {
         console.log('starting simulation');
         this.setState({ isSimulating: true });
 
-        let results: ResultType[] = [];
+        this.simulationWorker = new Worker();
+        this.simulationWorker.addEventListener('error', (ev) => console.error('[ERROR-WORKER] -- ' + ev.message));
 
-        let positions: number[] = [];
-        let maxPos: number = this.state.length - 1;
+        this.simulationWorker.onmessage = (msg) => {
+            console.log('APP got data');
+            let data = msg.data as WorkerReturnData;
 
-        for (let k = 0; k < this.state.count; k++) {
-            positions[k] = 0;
-        }
-
-        if (positions.length === 1) {
-            // The algorithem used in addOnePosition(..) misses the first result if positions only contains one element. We'll add this edge case 'manually'.
-            results.push({
-                positions: [positions[0]],
-                customers: []
+            this.setState({
+                results: data.results,
+                resultJsxs: this.generateJsxElements(data.results, this.state.filterId),
+                isSimulating: false
             });
-        }
+        };
 
-        let done: boolean = false;
-        while (!done) {
-            this.addOnePosition(positions, positions.length - 1, maxPos);
-            // console.log('P: ');
-            // console.log(positions);
-
-            let result: number[] = [];
-            positions.forEach((pos, idx) => result[idx] = pos);
-
-            // Search for duplicates. If there are any, don't add it
-            if (!this.hasDuplicateEntries(result)) {
-                results.push({
-                    positions: result,
-                    customers: []
-                });
-            }
-
-            // Check if we're done. The kiosk have to be positioned correctly in the last spots DESCENDING.
-            // We're assuming that we're done. If we find one kiosk which does not fit to the above we have to continue.
-            done = true;
-            for (let i = 0; i < positions.length; i++) {
-                if (positions[i] !== maxPos - i) {
-                    done = false;
-                    break;
-                }
-            }
-        }
-
-        console.log('positions set');
-
-        // Calculate the amount of customers everybody gets.
-        console.log('calculate customers');
-        results.forEach((result) => {
-            let customers: number[] = [];
-            let lastKioskPos: number = -1;
-
-            for (let i = 0; i < this.state.length; i++) {
-                let idxKiosk: number = result.positions.indexOf(i);
-                let idxLastKiosk: number = result.positions.indexOf(lastKioskPos);
-
-                if (idxKiosk !== -1) {
-                    // We found a kiosk at the given spot. Calculate it's customers
-                    let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosk
-
-                    if (lastKioskPos === -1) {
-                        // We found the FIRST kiosk, so just add all spots and his own
-                        customers[idxKiosk] = spotsBetween + 1;
-
-                    } else {
-                        // We found an additional one, so do some calculation magic
-                        customers[idxKiosk] = (spotsBetween / 2) + 1;
-                        customers[idxLastKiosk] = customers[idxLastKiosk] + (spotsBetween / 2);
-
-                    }
-
-                    lastKioskPos = i;
-                }
-
-                if (i === this.state.length - 1) {
-                    // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
-                    customers[idxLastKiosk] = customers[idxLastKiosk] + (this.state.length - 1 - lastKioskPos);
-                    // console.log(idxLastKiosk, customers[idxLastKiosk]);
-                }
-            }
-
-            result.customers = customers;
-
-            // console.log('R ' + result.customers);
-        });
-
-        console.log('simulation finished');
-
-        this.setState({
-            results,
-            resultJsxs: this.generateJsxElements(results, this.state.filterId),
-            isSimulating: false
-        });
-    }
-
-    private addOnePosition(positions: number[], idx: number, maxPos: number) {
-        if (idx === 0) {
-            // Only increase the first position if we're not at the max position.
-            if (positions[0] < maxPos) {
-                positions[0] = positions[0] + 1;
-            }
-
-            return;
-        }
-
-        positions[idx] = positions[idx] + 1;
-
-        if (positions[idx] > maxPos) {
-            // We are higher than the maximal posible position
-            positions[idx] = 0;
-            this.addOnePosition(positions, idx - 1, maxPos);
-        }
-    }
-
-    private hasDuplicateEntries(array: number[]): boolean {
-        for (let i = 0; i < array.length - 1; i++) {
-            if (array.indexOf(array[i], i + 1) !== -1) {
-                // Found a duplicate
-                return true;
-            }
-        }
-
-        return false;
+        let workerInput: WorkerInputData = { length: this.state.length, count: this.state.count };
+        this.simulationWorker.postMessage(workerInput);
     }
 
     private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
+        // TODO: Kann man das hier auch in den Worker verschieben?
+        //          -> Einfach so geht leider nicht.
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 

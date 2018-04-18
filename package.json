@@ -24,6 +24,7 @@
     "@types/react-dom": "^16.0.5",
     "@types/react-notification-system": "^0.2.37",
     "gh-pages": "^1.1.0",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.1",
+    "worker-loader": "^1.1.1"
   }
 }
