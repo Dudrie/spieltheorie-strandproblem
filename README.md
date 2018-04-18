@@ -16,7 +16,7 @@ Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). G
 ## v1.0
 - Initial Release
 
-# Was passiert eigentlich?
+# Technik
 Für die eingegebenen Daten wird das bestmögliche Ergebnis für alle Parteien berechnet. Dafür wird ein Entscheidungsbaum berechnet, der mit dem maxn-Algorithmus von Luckhardt und Irani erstellt wird (Quelle: [Multi-player alpha-beta pruning von Richard E. Korf](https://pdfs.semanticscholar.org/ec08/284de3ac57f72e3aa931881808c322be5edc.pdf)).
 .
 # Geplante Features
