@@ -73,44 +73,46 @@ function simulate(length: number, count: number): ResultType[] {
     // Calculate the amount of customers everybody gets.
     console.log('calculate customers');
     results.forEach((result) => {
-        let customers: number[] = [];
-        let lastKioskPos: number = -1;
-
-        for (let i = 0; i < length; i++) {
-            let idxKiosk: number = result.positions.indexOf(i);
-            let idxLastKiosk: number = result.positions.indexOf(lastKioskPos);
-
-            if (idxKiosk !== -1) {
-                // We found a kiosk at the given spot. Calculate it's customers
-                let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosk
-
-                if (lastKioskPos === -1) {
-                    // We found the FIRST kiosk, so just add all spots and his own
-                    customers[idxKiosk] = spotsBetween + 1;
-
-                } else {
-                    // We found an additional one, so do some calculation magic
-                    customers[idxKiosk] = (spotsBetween / 2) + 1;
-                    customers[idxLastKiosk] = customers[idxLastKiosk] + (spotsBetween / 2);
-
-                }
-
-                lastKioskPos = i;
-            }
-
-            if (i === length - 1) {
-                // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
-                customers[idxLastKiosk] = customers[idxLastKiosk] + (length - 1 - lastKioskPos);
-                // console.log(idxLastKiosk, customers[idxLastKiosk]);
-            }
-        }
-
-        result.customers = customers;
-
-        // console.log('R ' + result.customers);
+        result.customers = calculateCustomers(result.positions, length);
     });
 
     return results;
+}
+
+function calculateCustomers(positions: number[], length: number): number[] {
+    let customers: number[] = [];
+    let lastKioskPos: number = -1;
+
+    for (let i = 0; i < length; i++) {
+        let idxKiosk: number = positions.indexOf(i);
+        let idxLastKiosk: number = positions.indexOf(lastKioskPos);
+
+        if (idxKiosk !== -1) {
+            // We found a kiosk at the given spot. Calculate it's customers
+            let spotsBetween: number = i - lastKioskPos - 1; // Do NOT count the both spots with the kiosk
+
+            if (lastKioskPos === -1) {
+                // We found the FIRST kiosk, so just add all spots and his own
+                customers[idxKiosk] = spotsBetween + 1;
+
+            } else {
+                // We found an additional one, so do some calculation magic
+                customers[idxKiosk] = (spotsBetween / 2) + 1;
+                customers[idxLastKiosk] = customers[idxLastKiosk] + (spotsBetween / 2);
+
+            }
+
+            lastKioskPos = i;
+        }
+
+        if (i === length - 1) {
+            // We're add the end, so add all customors between the end and the last kiosk to the last kiosk
+            customers[idxLastKiosk] = customers[idxLastKiosk] + (length - 1 - lastKioskPos);
+            // console.log(idxLastKiosk, customers[idxLastKiosk]);
+        }
+    }
+
+    return customers;
 }
 
 function addOnePosition(positions: number[], idx: number, maxPos: number) {
