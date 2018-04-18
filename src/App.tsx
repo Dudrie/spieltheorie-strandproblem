@@ -105,7 +105,7 @@ export default class App extends React.Component<object, State> {
 
                 {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
                     <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
-                    <div className='div-filter' >
+                    {/* <div className='div-filter' >
                         <span>Sortieren:</span>
                         <label>
                             <input ref={this.inSortNr} type='text' placeholder='Kiosk Nr.' className='filter-input' />
@@ -115,7 +115,7 @@ export default class App extends React.Component<object, State> {
                         <button disabled>Alle</button>
                         <span>|</span>
                         <button onClick={this.onSortResetClicked} >Zurücksetzen</button>
-                    </div>
+                    </div> */}
                     <div>
                         {this.state.resultJsxs}
                     </div>
