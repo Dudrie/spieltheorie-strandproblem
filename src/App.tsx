@@ -451,7 +451,8 @@ export default class App extends React.Component<object, State> {
             children: message,
             level,
             dismissible: autoDismiss !== 0,
-            autoDismiss
+            autoDismiss,
+            position: 'tl'
         });
     }
 }
