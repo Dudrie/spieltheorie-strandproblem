@@ -84,7 +84,7 @@ export default class App extends React.Component<object, State> {
         return (
             <div className='App'>
                 <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.3)</h1>
+                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.4)</h1>
                     <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                 </header>
 
@@ -401,15 +401,13 @@ export default class App extends React.Component<object, State> {
     }
 
     private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
-        // TODO: Kann man das hier auch in den Worker verschieben?
-        //          -> Einfach so geht leider nicht.
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
         console.log('[APP] generating jsx elements');
         console.log('[APP] filtering started');
 
-        // Check if we want to filter the results first.
+        // // Check if we want to filter the results first.
         if (filterId !== 'noFilter') {
             if (filterId === 'all') {
                 // TODO: Implementiere 'all'-Filter
@@ -429,14 +427,16 @@ export default class App extends React.Component<object, State> {
             for (let i = 0; i < this.state.length; i++) {
                 let idxSpot: number = positions.indexOf(i);
                 let addClassName: string = 'empty';
-                let text: string = '-';
+                let nr = (idxSpot + 1) + '';
 
                 if (idxSpot !== -1) {
-                    text = (idxSpot + 1) + '';
                     addClassName = '';
                 }
 
-                row.push(<span key={'result-spot-' + i + '-' + idx} className={'result-spot ' + addClassName} >{text}</span>);
+                row.push(<span key={'result-spot-' + i + '-' + idx} className={'fa-layers result-spot ' + addClassName} >
+                    <i className='fal fa-home fa-2x'></i>
+                    <span className='fa-layers-text' data-fa-transform='shrink-2 up-3' style={{ fontWeight: 600 }} >{nr}</span>
+                </span>);
             }
 
             let customerJsx: JSX.Element[] = [];

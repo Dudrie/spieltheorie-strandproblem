@@ -52,6 +52,9 @@ body {
 .App-results {
     margin: 15px;
     justify-self: center;
+    justify-content: center;
+    justify-items: center;
+    text-justify: center;
     display: grid;
     /* width: 80vw; */
     min-width: 50vw;
