@@ -10,7 +10,6 @@ let beachLength: number;
 let currentPositions: number[];
 let savedPositions: number[];
 
-// FIXME: Die Positionen für die spielerIds k>=1 werden nicht korrekt gespeichert. Sie bleiben beim Standardwert '-1'.
 worker.addEventListener('message', (ev) => {
     console.log('[WORKER] got data');
     let data: WorkerInputData = ev.data as WorkerInputData;
