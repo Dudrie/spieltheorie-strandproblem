@@ -5,6 +5,8 @@ Repository zum Webinterface, welches das Strandproblem simulieren kann. Dieses W
 Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). Große Eingabezahlen können allerdings etwas dauern, bis sie berechnet wurden.
 
 # Versionen
+## v1.4
+- Es werden nun Kioskssymbole mit Nummern im Ergebnis angezeigt anstatt nur Nummern
 ## v1.3
 - Berechnung mit Hilfe eines Entscheidungsbaums
 - Nur noch das beste Ergebnis wird ausgegeben
