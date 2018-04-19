@@ -94,7 +94,7 @@ footer .footer-right {
     justify-self: center;
     justify-content: center;
     justify-items: center;
-    text-justify: center;
+    text-align: center;
     display: grid;
     /* width: 80vw; */
     min-width: 50vw;
@@ -123,6 +123,7 @@ footer .footer-right {
     width: 42px;
     padding: 2px;
     text-align: center;
+    /* Not supported in chrome yet. */
     text-justify: center;
 }
 
