@@ -82,31 +82,32 @@ export default class App extends React.Component<object, State> {
         let btnAbortDisabled: boolean = !this.state.isSimulating;
 
         return (
-            <div className='App'>
-                <header className='App-header'>
-                    <h1 className='App-title'>Spieltheorie - Strandproblem (v1.4)</h1>
-                    <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
-                </header>
+            <>
+                <div className='App'>
+                    <header className='App-header'>
+                        <h1 className='App-title'>Spieltheorie - Strandproblem (v1.4)</h1>
+                        <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
+                    </header>
 
-                <div className='App-inputs'>
-                    <label>
-                        Strandlänge: <input ref={this.inLength} disabled={this.state.isSimulating} type='text' value={this.state.lengthStr} onChange={this.onInLengthChanged} />
-                    </label>
-                    <label>
-                        Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
-                    </label>
-                    <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
-                    <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
-                    <button onClick={this.onSimulationReset}>Zurücksetzen</button>
-                </div>
+                    <div className='App-inputs'>
+                        <label>
+                            Strandlänge: <input ref={this.inLength} disabled={this.state.isSimulating} type='text' value={this.state.lengthStr} onChange={this.onInLengthChanged} />
+                        </label>
+                        <label>
+                            Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
+                        </label>
+                        <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
+                        <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
+                        <button onClick={this.onSimulationReset}>Zurücksetzen</button>
+                    </div>
 
-                {this.state.isSimulating && <div className='App-results'>
-                    <i className='fal fa-cog fa-spin'></i>Simuliere...
+                    {this.state.isSimulating && <div className='App-results'>
+                        <i className='fal fa-cog fa-spin'></i>Simuliere...
                 </div>}
 
-                {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
-                    <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
-                    {/* <div className='div-filter' >
+                    {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
+                        <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
+                        {/* <div className='div-filter' >
                         <span>Sortieren:</span>
                         <label>
                             <input ref={this.inSortNr} type='text' placeholder='Kiosk Nr.' className='filter-input' />
@@ -117,13 +118,23 @@ export default class App extends React.Component<object, State> {
                         <span>|</span>
                         <button onClick={this.onSortResetClicked} >Zurücksetzen</button>
                     </div> */}
-                    <div>
-                        {this.state.resultJsxs}
-                    </div>
-                </div>}
+                        <div>
+                            {this.state.resultJsxs}
+                        </div>
+                    </div>}
 
-                <NotifcationSystem ref={this.notifcationSystem} />
-            </div>
+                    <footer>
+                        <div className='footer-left' >
+                            Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Eisermann)
+                        </div>
+                        <div className='footer-right' >
+                            <i className='far fa-copyright'></i> Sascha Skowronnek
+                        </div>
+                    </footer>
+
+                    <NotifcationSystem ref={this.notifcationSystem} />
+                </div>
+            </>
         );
     }
 
