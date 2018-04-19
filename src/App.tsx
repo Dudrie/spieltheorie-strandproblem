@@ -26,8 +26,6 @@ export type ResultType = { positions: number[], customers: number[] };
 
 // TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
 //          -> Gute Idee?
-// TODO: Namen und Hinweis zur Vorlesung einbauen
-//          -> Footer
 // TODO: Filter vervollständigen
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
@@ -80,12 +78,13 @@ export default class App extends React.Component<object, State> {
     render() {
         let btnSimulateDisabled: boolean = this.state.isSimulating || this.state.length <= 0 || this.state.count <= 0 || this.state.length < this.state.count;
         let btnAbortDisabled: boolean = !this.state.isSimulating;
+        let btnResetDisabled: boolean = this.state.isSimulating;
 
         return (
             <>
                 <div className='App'>
                     <header className='App-header'>
-                        <h1 className='App-title'>Spieltheorie - Strandproblem (v1.4)</h1>
+                        <h1 className='App-title'>Spieltheorie - Strandproblem (v1.5)</h1>
                         <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
                     </header>
 
@@ -98,7 +97,7 @@ export default class App extends React.Component<object, State> {
                         </label>
                         <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
                         <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
-                        <button onClick={this.onSimulationReset}>Zurücksetzen</button>
+                        <button disabled={btnResetDisabled} onClick={this.onSimulationReset}>Zurücksetzen</button>
                     </div>
 
                     {this.state.isSimulating && <div className='App-results'>
@@ -106,7 +105,8 @@ export default class App extends React.Component<object, State> {
                 </div>}
 
                     {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
-                        <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3>
+                        {/* <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3> */}
+                        <h3>Ergebnis</h3>
                         {/* <div className='div-filter' >
                         <span>Sortieren:</span>
                         <label>
