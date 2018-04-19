@@ -125,7 +125,7 @@ export default class App extends React.Component<object, State> {
 
                     <footer>
                         <div className='footer-left' >
-                            Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Eisermann)
+                            Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Dr. Eisermann)
                         </div>
                         <div className='footer-right' >
                             <i className='far fa-copyright'></i> Sascha Skowronnek
