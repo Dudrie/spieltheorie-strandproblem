@@ -124,6 +124,7 @@ footer .footer-right {
     padding: 2px;
     text-align: center;
     text-justify: center;
+    user-select: none;
 }
 
 .App-results .result-customer-count-div {
