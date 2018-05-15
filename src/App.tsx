@@ -44,10 +44,10 @@ export default class App extends React.Component<object, State> {
     private notifcationSystem: RefObject<NotifcationSystem.System>;
 
     private inLengthChangeTimer: NodeJS.Timer | null = null;
-    private inLengthErrorNoti: NotifcationSystem.Notification | null = null;
     private inCountChangeTimer: NodeJS.Timer | null = null;
-    private inCountErrorNoti: NotifcationSystem.Notification | null = null;
-    private errorInputInvalidNoti: NotifcationSystem.Notification | null = null;
+    private notiInLengthError: NotifcationSystem.Notification | null = null;
+    private notiInCountError: NotifcationSystem.Notification | null = null;
+    private notiErrorInputInvalid: NotifcationSystem.Notification | null = null;
 
     constructor(props: object) {
         super(props);
@@ -207,25 +207,25 @@ export default class App extends React.Component<object, State> {
                 });
 
                 if (this.notifcationSystem.current && val !== '') {
-                    this.inLengthErrorNoti = this.showNotification(
+                    this.notiInLengthError = this.showNotification(
                         'Fehler - Länge ungültig',
                         'Der Länge des Strands muss eine positive, natürliche Zahl sein. Aktueller Wert: ' + val + '.',
                         'error',
-                        this.inLengthErrorNoti,
+                        this.notiInLengthError,
                         0
                     );
 
-                    if (this.errorInputInvalidNoti) {
-                        this.notifcationSystem.current.removeNotification(this.errorInputInvalidNoti);
-                        this.errorInputInvalidNoti = null;
+                    if (this.notiErrorInputInvalid) {
+                        this.notifcationSystem.current.removeNotification(this.notiErrorInputInvalid);
+                        this.notiErrorInputInvalid = null;
                     }
                 }
 
                 return;
             }
 
-            if (this.notifcationSystem.current && this.inLengthErrorNoti) {
-                this.notifcationSystem.current.removeNotification(this.inLengthErrorNoti);
+            if (this.notifcationSystem.current && this.notiInLengthError) {
+                this.notifcationSystem.current.removeNotification(this.notiInLengthError);
             }
 
             this.isValidInput(length, this.state.count);
@@ -259,25 +259,25 @@ export default class App extends React.Component<object, State> {
                 });
 
                 if (this.notifcationSystem.current && val !== '') {
-                    this.inCountErrorNoti = this.showNotification(
+                    this.notiInCountError = this.showNotification(
                         'Fehler - Anzahl ungültig',
                         'Die Anzahl der Kiosks muss eine positive, natürliche Zahl sein. Aktueller Wert: ' + val + '.',
                         'error',
-                        this.inCountErrorNoti,
+                        this.notiInCountError,
                         0
                     );
 
-                    if (this.errorInputInvalidNoti) {
-                        this.notifcationSystem.current.removeNotification(this.errorInputInvalidNoti);
-                        this.errorInputInvalidNoti = null;
+                    if (this.notiErrorInputInvalid) {
+                        this.notifcationSystem.current.removeNotification(this.notiErrorInputInvalid);
+                        this.notiErrorInputInvalid = null;
                     }
                 }
 
                 return;
             }
 
-            if (this.notifcationSystem.current && this.inCountErrorNoti) {
-                this.notifcationSystem.current.removeNotification(this.inCountErrorNoti);
+            if (this.notifcationSystem.current && this.notiInCountError) {
+                this.notifcationSystem.current.removeNotification(this.notiInCountError);
             }
 
             this.isValidInput(this.state.length, count);
@@ -288,6 +288,9 @@ export default class App extends React.Component<object, State> {
         }, 150);
     }
 
+    private notiWarningLengthTooHigh: NotifcationSystem.Notification | null = null;
+    private notiWarningCountTooHigh: NotifcationSystem.Notification | null = null;
+
     private isValidInput(length: number, count: number): boolean {
         if (length < count) {
             let msg: JSX.Element = <>
@@ -296,34 +299,48 @@ export default class App extends React.Component<object, State> {
                 Strand: {length}, Kiosks: {count}
             </>;
 
-            this.errorInputInvalidNoti = this.showNotification('Fehler - Eingabe ungültig', msg, 'error', this.errorInputInvalidNoti, 0);
+            this.notiErrorInputInvalid = this.showNotification('Fehler - Eingabe ungültig', msg, 'error', this.notiErrorInputInvalid, 0);
             return false;
         }
 
         if (this.notifcationSystem.current) {
-            if (this.errorInputInvalidNoti) {
-                this.notifcationSystem.current.removeNotification(this.errorInputInvalidNoti);
-                this.errorInputInvalidNoti = null;
+            if (this.notiErrorInputInvalid) {
+                this.notifcationSystem.current.removeNotification(this.notiErrorInputInvalid);
+                this.notiErrorInputInvalid = null;
             }
 
-            if (length > this.CRIT_SIZE_LENGTH && length !== this.state.length) {
-                this.showNotification(
-                    'Warnung - Eingabe zu hoch',
-                    'Die Länge des Strands ist länger als ' + this.CRIT_SIZE_LENGTH + '. Dies kann zu einer längeren Berechnungsdauer führen.',
-                    'info',
-                    null,
-                    8
-                );
+            if (length > this.CRIT_SIZE_LENGTH) {
+                if (!this.notiWarningLengthTooHigh) {
+                    this.notiWarningLengthTooHigh = this.showNotification(
+                        'Warnung - Eingabe zu hoch',
+                        'Die Länge des Strands ist länger als ' + this.CRIT_SIZE_LENGTH + '. Dies kann zu einer längeren Berechnungsdauer führen.',
+                        'info',
+                        this.notiWarningLengthTooHigh,
+                        0
+                    );
+                }
+            } else {
+                if (this.notiWarningLengthTooHigh) {
+                    this.notifcationSystem.current.removeNotification(this.notiWarningLengthTooHigh);
+                    this.notiWarningLengthTooHigh = null;
+                }
             }
 
-            if (count > this.CRIT_SIZE_COUNT && count !== this.state.count) {
-                this.showNotification(
-                    'Warnung - Eingaben zu hoch',
-                    'Die Anzahl der Kiosks ist größer als ' + this.CRIT_SIZE_COUNT + '. Dies kann zu einer längeren Berechnungsdauer führen.',
-                    'info',
-                    null,
-                    8
-                );
+            if (count > this.CRIT_SIZE_COUNT) {
+                if (!this.notiWarningCountTooHigh) {
+                    this.notiWarningCountTooHigh = this.showNotification(
+                        'Warnung - Eingaben zu hoch',
+                        'Die Anzahl der Kiosks ist größer als ' + this.CRIT_SIZE_COUNT + '. Dies kann zu einer längeren Berechnungsdauer führen.',
+                        'info',
+                        this.notiWarningCountTooHigh,
+                        0
+                    );
+                }
+            } else {
+                if (this.notiWarningCountTooHigh) {
+                    this.notifcationSystem.current.removeNotification(this.notiWarningCountTooHigh);
+                    this.notiWarningCountTooHigh = null;
+                }
             }
         }
 
