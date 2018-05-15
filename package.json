@@ -4,10 +4,11 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "react": "^16.3.1",
-    "react-dom": "^16.3.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
     "react-notification-system": "^0.2.17",
-    "react-scripts-ts": "2.14.0"
+    "react-scripts-ts": "2.16.0",
+    "material-ui": "^1.0.0-beta.45"
   },
   "homepage": "https://dudrie.github.io/spieltheorie-strandproblem/",
   "scripts": {
@@ -18,13 +19,13 @@
     "deploy": "react-scripts-ts build & gh-pages -d build"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.2",
-    "@types/node": "^9.6.4",
-    "@types/react": "^16.3.8",
+    "@types/jest": "^22.2.3",
+    "@types/node": "^10.0.10",
+    "@types/react": "^16.3.14",
     "@types/react-dom": "^16.0.5",
     "@types/react-notification-system": "^0.2.37",
     "gh-pages": "^1.1.0",
-    "typescript": "^2.8.1",
+    "typescript": "^2.8.3",
     "worker-loader": "^1.1.1"
   }
 }

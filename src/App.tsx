@@ -1,14 +1,13 @@
+import { AppBar, Button, Grid, MuiThemeProvider, Paper, TextField, Typography, Zoom, createMuiTheme } from 'material-ui';
 import * as React from 'react';
-import * as NotifcationSystem from 'react-notification-system';
-
 import { RefObject } from 'react';
+import * as NotifcationSystem from 'react-notification-system';
+import { WorkerInputData, WorkerReturnData } from './SimulationWorker';
+import './style.css';
 
 // Register the worker with the worker-loader (no replacement for this require-import found)
 // tslint:disable-next-line:no-require-imports
 import Worker = require('worker-loader!./SimulationWorker');
-
-import './style.css';
-import { WorkerReturnData, WorkerInputData } from './SimulationWorker';
 
 interface State {
     results: ResultType[];
@@ -24,6 +23,17 @@ interface State {
 export type FilterIdType = number | 'all' | 'noFilter';
 export type ResultType = { positions: number[], customers: number[] };
 
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: '#1976D2'
+        },
+        secondary: {
+            main: '#E53935'
+        }
+    }
+});
+
 // TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
 //          -> Gute Idee?
 // TODO: Filter vervollständigen
@@ -34,11 +44,7 @@ export default class App extends React.Component<object, State> {
     private readonly CRIT_SIZE_COUNT = 6;
 
     private simulationWorker: Worker | null = null;
-
     private notifcationSystem: RefObject<NotifcationSystem.System>;
-    private inLength: RefObject<HTMLInputElement>;
-    private inCount: RefObject<HTMLInputElement>;
-    private inSortNr: RefObject<HTMLInputElement>;
 
     private inLengthChangeTimer: NodeJS.Timer | null = null;
     private inLengthErrorNoti: NotifcationSystem.Notification | null = null;
@@ -61,14 +67,10 @@ export default class App extends React.Component<object, State> {
         };
 
         this.notifcationSystem = React.createRef();
-        this.inLength = React.createRef();
-        this.inCount = React.createRef();
-        this.inSortNr = React.createRef();
 
         this.simulate = this.simulate.bind(this);
         this.onInLengthChanged = this.onInLengthChanged.bind(this);
         this.onInCountChanged = this.onInCountChanged.bind(this);
-        this.onSortByKioskClicked = this.onSortByKioskClicked.bind(this);
         this.onSortResetClicked = this.onSortResetClicked.bind(this);
         this.onSimulationStart = this.onSimulationStart.bind(this);
         this.onSimulationAbort = this.onSimulationAbort.bind(this);
@@ -81,52 +83,108 @@ export default class App extends React.Component<object, State> {
         let btnResetDisabled: boolean = this.state.isSimulating;
 
         return (
-            <>
+            <MuiThemeProvider theme={theme} >
                 <div className='App'>
-                    <header className='App-header'>
-                        <h1 className='App-title'>Spieltheorie - Strandproblem (v1.5)</h1>
-                        <div className='App-github'><a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a></div>
-                    </header>
+                    <AppBar position='static' className='header' style={{ backgroundColor: '#222' }} >
+                        <Typography variant='display1' style={{ color: '#fff', marginBottom: '5px', fontSize: '1.8em' }} >
+                            Spieltheorie - Strandproblem (v1.6)
+                        </Typography>
+                        <Typography variant='subheading' className='App-github'>
+                            <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
+                        </Typography>
+                    </AppBar>
+                    
+                    <Grid container alignItems='flex-end' justify='center' style={{ width: '100%' }} spacing={8}>
+                        <Grid item>
+                            <TextField
+                                label='Strandlänge'
+                                type='number'
+                                disabled={this.state.isSimulating}
+                                value={this.state.lengthStr}
+                                onChange={this.onInLengthChanged}
 
-                    <div className='App-inputs'>
-                        <label>
-                            Strandlänge: <input ref={this.inLength} disabled={this.state.isSimulating} type='text' value={this.state.lengthStr} onChange={this.onInLengthChanged} />
-                        </label>
-                        <label>
-                            Anzahl Kiosks: <input ref={this.inCount} type='text' value={this.state.countStr} onChange={this.onInCountChanged} disabled={this.state.isSimulating} />
-                        </label>
-                        <button disabled={btnSimulateDisabled} onClick={this.onSimulationStart}>Simulation starten</button>
-                        <button disabled={btnAbortDisabled} onClick={this.onSimulationAbort} >Abbrechen</button>
-                        <button disabled={btnResetDisabled} onClick={this.onSimulationReset}>Zurücksetzen</button>
-                    </div>
+                            />
+                        </Grid>
+                        <Grid item>
+                            <TextField
+                                label='Anzahl Kiosks'
+                                type='number'
+                                disabled={this.state.isSimulating}
+                                value={this.state.countStr}
+                                onChange={this.onInCountChanged}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                disabled={btnSimulateDisabled}
+                                variant='raised'
+                                size='small'
+                                color='primary'
+                                onClick={this.onSimulationStart}
+                                style={{ textTransform: 'none', fontSize: '1em' }}
+                            >
+                                Simulation starten
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                disabled={btnAbortDisabled}
+                                variant='raised'
+                                size='small'
+                                color='secondary'
+                                onClick={this.onSimulationAbort}
+                                style={{ textTransform: 'none', fontSize: '1em' }}
+                            >
+                                Abbrechen
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                disabled={btnResetDisabled}
+                                variant='raised'
+                                size='small'
+                                onClick={this.onSimulationReset}
+                                style={{ textTransform: 'none', fontSize: '1em' }}
+                            >
+                                Zurücksetzen
+                          </Button>
+                        </Grid>
+                    </Grid>
 
-                    {this.state.isSimulating &&
-                        <div className='App-results'>
-                            <i className='fal fa-cog fa-spin'></i>Simuliere...
-                        </div>
-                    }
+                    <Zoom in={this.state.isSimulating || this.state.resultJsxs.length > 0} unmountOnExit >
+                        <Paper square elevation={3} className='App-results'>
+                            {this.state.isSimulating &&
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    textAlign: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    <i className='fal fa-cog fa-spin'></i>Simuliere...
+                                </div>
+                            }
 
-                    {(!this.state.isSimulating && this.state.resultJsxs.length > 0) &&
-                        <div className='App-results'>
-                            <h3>Ergebnis</h3>
-                            <div>
-                                {this.state.resultJsxs}
-                            </div>
-                        </div>
-                    }
+                            {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div>
+                                <Typography variant='title' >Ergebnis</Typography>
+                                <div>
+                                    {this.state.resultJsxs}
+                                </div>
+                            </div>}
+                        </Paper>
+                    </Zoom>
 
                     <footer>
-                        <div className='footer-left' >
+                        <Typography className='footer-left' variant='subheading' style={{ color: '#fff' }} >
                             Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Dr. Eisermann)
-                        </div>
-                        <div className='footer-right' >
+                        </Typography>
+                        <Typography className='footer-right' variant='subheading' style={{ color: '#fff' }}>
                             <i className='far fa-copyright'></i> Sascha Skowronnek
-                        </div>
+                        </Typography>
                     </footer>
 
                     <NotifcationSystem ref={this.notifcationSystem} />
                 </div>
-            </>
+            </MuiThemeProvider>
         );
     }
 
@@ -306,48 +364,6 @@ export default class App extends React.Component<object, State> {
         this.abortSimulation(true);
     }
 
-    private onSortByKioskClicked() {
-        if (!this.inSortNr.current) {
-            return;
-        }
-
-        let kioskNr: number = Number.parseInt(this.inSortNr.current.value);
-
-        // We'll subtract one from the kioskNr later to map the number to the actual index.
-        if (Number.isNaN(kioskNr)) {
-            this.showNotification(
-                'Fehler - Kiosk Nr. ungültig',
-                'Die angegebene Kiosk Nummer (' + this.inSortNr.current.value + ') ist keine Zahl.',
-                'error',
-                null
-            );
-
-            return;
-        }
-
-        if (kioskNr > this.state.count || kioskNr <= 0) {
-            this.showNotification(
-                'Fehler - Kiosk Nr. ungültig',
-                'Die angegebene Kiosk Nummer (' + kioskNr + ') nicht im erforderlichen Bereich [1, ' + this.state.count + '].',
-                'error',
-                null
-            );
-            return;
-        }
-
-        let filterId: FilterIdType = kioskNr - 1;
-
-        // Don't sort again if the filter stays the same.
-        if (this.state.filterId === filterId) {
-            return;
-        }
-
-        this.setState({
-            filterId,
-            resultJsxs: this.generateJsxElements(this.state.results, filterId)
-        });
-    }
-
     private onSortResetClicked() {
         this.setState({
             filterId: 'noFilter',
@@ -452,10 +468,12 @@ export default class App extends React.Component<object, State> {
                     addClassName = '';
                 }
 
-                row.push(<span key={'result-spot-' + i + '-' + idx} className={'fa-layers result-spot ' + addClassName} >
-                    <i className='fal fa-home fa-2x'></i>
-                    <span className='fa-layers-text' data-fa-transform='shrink-2 up-3' style={{ fontWeight: 600 }} >{nr}</span>
-                </span>);
+                row.push
+                    (<span key={'result-spot-' + i + '-' + idx} className={'fa-layers result-spot ' + addClassName} >
+                        <i className='fal fa-home fa-2x'></i>
+                        <span className='fa-layers-text' data-fa-transform='shrink-2 up-3' style={{ fontWeight: 600 }} >{nr}</span>
+                    </span>
+                    );
             }
 
             let customerJsx: JSX.Element[] = [];
@@ -473,7 +491,7 @@ export default class App extends React.Component<object, State> {
                 );
             });
 
-            row.push(<div key={'result-customers-' + idx} className='result-customer-count-div' >{customerJsx}</div>);
+            row.push(<Typography variant='subheading' key={'result-customers-' + idx} className='result-customer-count-div' >{customerJsx}</Typography>);
 
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });

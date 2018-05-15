@@ -17,13 +17,12 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "pretty": true,
-    "target": "es6",
+    "target": "es2015",
     "jsx": "react",
-    "outDir": "out/code",
-    "lib": [
-      "es6",
-      "dom",
-      "es2017.object"
-    ]
+    "outDir": "out/code"
+  },
+  "formatCodeOptions": {
+    "indentSize": 2,
+    "tabSize": 2
   }
 }
