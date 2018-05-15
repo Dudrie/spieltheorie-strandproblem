@@ -100,28 +100,20 @@ export default class App extends React.Component<object, State> {
                         <button disabled={btnResetDisabled} onClick={this.onSimulationReset}>Zurücksetzen</button>
                     </div>
 
-                    {this.state.isSimulating && <div className='App-results'>
-                        <i className='fal fa-cog fa-spin'></i>Simuliere...
-                </div>}
-
-                    {(!this.state.isSimulating && this.state.resultJsxs.length > 0) && <div className='App-results'>
-                        {/* <h3>Ergebnisse (Anzahl: {this.state.results.length})</h3> */}
-                        <h3>Ergebnis</h3>
-                        {/* <div className='div-filter' >
-                        <span>Sortieren:</span>
-                        <label>
-                            <input ref={this.inSortNr} type='text' placeholder='Kiosk Nr.' className='filter-input' />
-                        </label>
-                        <button onClick={this.onSortByKioskClicked} >Sortiere</button>
-                        <span>|</span>
-                        <button disabled>Alle</button>
-                        <span>|</span>
-                        <button onClick={this.onSortResetClicked} >Zurücksetzen</button>
-                    </div> */}
-                        <div>
-                            {this.state.resultJsxs}
+                    {this.state.isSimulating &&
+                        <div className='App-results'>
+                            <i className='fal fa-cog fa-spin'></i>Simuliere...
                         </div>
-                    </div>}
+                    }
+
+                    {(!this.state.isSimulating && this.state.resultJsxs.length > 0) &&
+                        <div className='App-results'>
+                            <h3>Ergebnis</h3>
+                            <div>
+                                {this.state.resultJsxs}
+                            </div>
+                        </div>
+                    }
 
                     <footer>
                         <div className='footer-left' >

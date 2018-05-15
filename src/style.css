@@ -27,7 +27,7 @@ footer {
     background-color: #222;
     display: grid;
     align-content: center;
-    grid-template-columns: "1fr 180px";
+    grid-template-columns: 1fr 180px;
     position: absolute;
     left: 0;
     bottom: 0;
@@ -52,11 +52,11 @@ footer .footer-right {
 }
 
 .App {
+    display: flex;
+    flex-direction: column;
     text-align: center;
-    display: grid;
-    grid-template-columns: "1fr";
     justify-content: center;
-    justify-items: center;
+    /* justify-items: center; */
 }
 
 .App-title {
