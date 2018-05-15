@@ -452,7 +452,7 @@ export default class App extends React.Component<object, State> {
                 row.push
                     (<span key={'result-spot-' + i + '-' + idx} className={'fa-layers result-spot ' + addClassName} >
                         <i className='fal fa-home fa-2x'></i>
-                        <span className='fa-layers-text' data-fa-transform='shrink-2 up-3' style={{ fontWeight: 600 }} >{nr}</span>
+                        <span className='fa-layers-text' data-fa-transform='shrink-2 up-4' style={{ fontWeight: 500 }} >{nr}</span>
                     </span>
                     );
             }

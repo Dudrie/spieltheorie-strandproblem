@@ -34,12 +34,12 @@ footer {
 }
 
 footer .footer-left {
-    text-align: start;
+    text-align: left;
     grid-column: 1 / 1;
 }
 
 footer .footer-right {
-    text-align: end;
+    text-align: right;
     grid-column: 2 / 2;
 }
 
