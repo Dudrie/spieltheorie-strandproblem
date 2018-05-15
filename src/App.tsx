@@ -17,10 +17,8 @@ interface State {
     countStr: string;
     length: number;
     count: number;
-    filterId: FilterIdType;
 }
 
-export type FilterIdType = number | 'all' | 'noFilter';
 export type ResultType = { positions: number[], customers: number[] };
 
 const theme = createMuiTheme({
@@ -36,7 +34,6 @@ const theme = createMuiTheme({
 
 // TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
 //          -> Gute Idee?
-// TODO: Filter vervollständigen
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
@@ -62,8 +59,7 @@ export default class App extends React.Component<object, State> {
             lengthStr: this.DEF_LENGTH + '',
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
-            count: this.DEF_COUNT,
-            filterId: 'noFilter'
+            count: this.DEF_COUNT
         };
 
         this.notifcationSystem = React.createRef();
@@ -93,7 +89,7 @@ export default class App extends React.Component<object, State> {
                             <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
                         </Typography>
                     </AppBar>
-                    
+
                     <Grid container alignItems='flex-end' justify='center' style={{ width: '100%' }} spacing={8}>
                         <Grid item>
                             <TextField
@@ -366,8 +362,7 @@ export default class App extends React.Component<object, State> {
 
     private onSortResetClicked() {
         this.setState({
-            filterId: 'noFilter',
-            resultJsxs: this.generateJsxElements(this.state.results, 'noFilter')
+            resultJsxs: this.generateJsxElements(this.state.results)
         });
     }
 
@@ -394,7 +389,7 @@ export default class App extends React.Component<object, State> {
 
             this.setState({
                 results: data.results,
-                resultJsxs: this.generateJsxElements(data.results, this.state.filterId),
+                resultJsxs: this.generateJsxElements(data.results),
                 isSimulating: false
             });
 
@@ -435,25 +430,11 @@ export default class App extends React.Component<object, State> {
         }
     }
 
-    private generateJsxElements(results: ResultType[], filterId: FilterIdType): JSX.Element[] {
+    private generateJsxElements(results: ResultType[]): JSX.Element[] {
         let resultEls: JSX.Element[] = [];
         let usedResults: ResultType[] = results.slice(0);
 
         console.log('[APP] generating jsx elements');
-        console.log('[APP] filtering started');
-
-        // // Check if we want to filter the results first.
-        if (filterId !== 'noFilter') {
-            if (filterId === 'all') {
-                // TODO: Implementiere 'all'-Filter
-
-            } else {
-                usedResults.sort((a: ResultType, b: ResultType) => {
-                    return b.customers[filterId] - a.customers[filterId];
-                });
-            }
-        }
-        console.log('[APP] filtering finished');
 
         usedResults.forEach((result, idx) => {
             let positions = result.positions;
@@ -480,10 +461,6 @@ export default class App extends React.Component<object, State> {
 
             result.customers.forEach((cust, i) => {
                 let addClassName: string = '';
-                if (i === filterId) {
-                    addClassName += ' filtered-by';
-                }
-
                 customerJsx.push(
                     <span key={'cust-' + idx + '-' + i} className={'result-customer-count' + addClassName} >
                         {'K' + (i + 1) + ': ' + cust}
@@ -491,7 +468,16 @@ export default class App extends React.Component<object, State> {
                 );
             });
 
-            row.push(<Typography variant='subheading' key={'result-customers-' + idx} className='result-customer-count-div' >{customerJsx}</Typography>);
+            row.push(
+                <Typography
+                    key={'result-customers-' + idx}
+                    variant='subheading'
+                    className='result-customer-count-div'
+                    style={{ color: '#000' }}
+                >
+                    {customerJsx}
+                </Typography>
+            );
 
             resultEls.push(<div key={'result-' + idx} className='result'>{row}</div>);
         });
