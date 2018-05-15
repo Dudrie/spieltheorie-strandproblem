@@ -32,8 +32,6 @@ const theme = createMuiTheme({
     }
 });
 
-// TODO: Die Warnungen für zu hohe Werte sollten 'sticky' sein, so wie die Eingabefehler
-//          -> Gute Idee?
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
@@ -45,9 +43,12 @@ export default class App extends React.Component<object, State> {
 
     private inLengthChangeTimer: NodeJS.Timer | null = null;
     private inCountChangeTimer: NodeJS.Timer | null = null;
+
     private notiInLengthError: NotifcationSystem.Notification | null = null;
     private notiInCountError: NotifcationSystem.Notification | null = null;
     private notiErrorInputInvalid: NotifcationSystem.Notification | null = null;
+    private notiWarningLengthTooHigh: NotifcationSystem.Notification | null = null;
+    private notiWarningCountTooHigh: NotifcationSystem.Notification | null = null;
 
     constructor(props: object) {
         super(props);
@@ -288,9 +289,6 @@ export default class App extends React.Component<object, State> {
         }, 150);
     }
 
-    private notiWarningLengthTooHigh: NotifcationSystem.Notification | null = null;
-    private notiWarningCountTooHigh: NotifcationSystem.Notification | null = null;
-
     private isValidInput(length: number, count: number): boolean {
         if (length < count) {
             let msg: JSX.Element = <>
@@ -371,6 +369,8 @@ export default class App extends React.Component<object, State> {
             count: this.DEF_COUNT,
             countStr: this.DEF_COUNT + ''
         });
+
+        this.isValidInput(this.DEF_LENGTH, this.DEF_COUNT);
     }
 
     private onSimulationAbort() {
