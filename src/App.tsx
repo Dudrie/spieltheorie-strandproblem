@@ -9,6 +9,8 @@ import './style.css';
 // tslint:disable-next-line:no-require-imports
 import Worker = require('worker-loader!./SimulationWorker');
 
+export type ResultType = { positions: number[], customers: number[] };
+
 interface State {
     results: ResultType[];
     resultJsxs: JSX.Element[];
@@ -18,8 +20,6 @@ interface State {
     length: number;
     count: number;
 }
-
-export type ResultType = { positions: number[], customers: number[] };
 
 const theme = createMuiTheme({
     palette: {
@@ -32,6 +32,8 @@ const theme = createMuiTheme({
     }
 });
 
+// TODO: Erläuterungen einbauen.
+// TODO: JSDoc-Kommentare
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
     private readonly DEF_COUNT = 3;
