@@ -1,4 +1,4 @@
-import { AppBar, Button, Grid, MuiThemeProvider, Paper, TextField, Typography, Zoom, createMuiTheme } from 'material-ui';
+import { AppBar, Button, Card, CardContent, CardHeader, Grid, IconButton, MuiThemeProvider, Paper, TextField, Toolbar, Tooltip, Typography, Zoom, createMuiTheme, Slide, CardActions, Collapse } from 'material-ui';
 import * as React from 'react';
 import { RefObject } from 'react';
 import * as NotifcationSystem from 'react-notification-system';
@@ -11,16 +11,6 @@ import Worker = require('worker-loader!./SimulationWorker');
 
 export type ResultType = { positions: number[], customers: number[] };
 
-interface State {
-    results: ResultType[];
-    resultJsxs: JSX.Element[];
-    isSimulating: boolean;
-    lengthStr: string;
-    countStr: string;
-    length: number;
-    count: number;
-}
-
 const theme = createMuiTheme({
     palette: {
         primary: {
@@ -31,6 +21,18 @@ const theme = createMuiTheme({
         }
     }
 });
+
+interface State {
+    results: ResultType[];
+    resultJsxs: JSX.Element[];
+    isSimulating: boolean;
+    lengthStr: string;
+    countStr: string;
+    length: number;
+    count: number;
+    showInfo: boolean;
+    showAdditionalInfo: boolean;
+}
 
 // TODO: Erläuterungen einbauen.
 // TODO: JSDoc-Kommentare
@@ -62,7 +64,9 @@ export default class App extends React.Component<object, State> {
             lengthStr: this.DEF_LENGTH + '',
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
-            count: this.DEF_COUNT
+            count: this.DEF_COUNT,
+            showInfo: false,
+            showAdditionalInfo: false
         };
 
         this.notifcationSystem = React.createRef();
@@ -70,10 +74,11 @@ export default class App extends React.Component<object, State> {
         this.simulate = this.simulate.bind(this);
         this.onInLengthChanged = this.onInLengthChanged.bind(this);
         this.onInCountChanged = this.onInCountChanged.bind(this);
-        this.onSortResetClicked = this.onSortResetClicked.bind(this);
         this.onSimulationStart = this.onSimulationStart.bind(this);
         this.onSimulationAbort = this.onSimulationAbort.bind(this);
         this.onSimulationReset = this.onSimulationReset.bind(this);
+        this.changeInfoVisibility = this.changeInfoVisibility.bind(this);
+        this.changeAdditionalInfoVisibility = this.changeAdditionalInfoVisibility.bind(this);
     }
 
     render() {
@@ -85,12 +90,42 @@ export default class App extends React.Component<object, State> {
             <MuiThemeProvider theme={theme} >
                 <div className='App'>
                     <AppBar position='static' className='header' style={{ backgroundColor: '#222' }} >
-                        <Typography variant='display1' style={{ color: '#fff', marginBottom: '5px', fontSize: '1.8em' }} >
-                            Spieltheorie - Strandproblem (v1.6)
-                        </Typography>
-                        <Typography variant='subheading' className='App-github'>
-                            <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
-                        </Typography>
+                        <Toolbar style={{ height: '100%' }}>
+                            <div style={{ flex: 1 }}>
+                                <Typography
+                                    variant='display1'
+                                    style={{
+                                        color: '#fff',
+                                        marginBottom: '5px',
+                                        fontSize: '1.8em'
+                                    }}
+                                >
+                                    Spieltheorie - Strandproblem (v1.6)
+                                </Typography>
+                                <Typography variant='subheading' className='App-github'>
+                                    <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
+                                </Typography>
+                            </div>
+                            <Tooltip
+                                title={
+                                    <Typography variant='subheading' style={{ color: '#fff' }} >Mehr Informationen hier</Typography>
+                                }
+                            >
+                                <Button
+                                    variant='raised'
+                                    color='primary'
+                                    style={{
+                                        height: '40px',
+                                        color: '#fff',
+                                        textTransform: 'none',
+                                        backgroundColor: this.state.showInfo ? '#EF6C00' : ''
+                                    }}
+                                    onClick={this.changeInfoVisibility}
+                                >
+                                    Info <i style={{ marginLeft: theme.spacing.unit }} className='fas fa-info' ></i>
+                                </Button>
+                            </Tooltip>
+                        </Toolbar>
                     </AppBar>
 
                     <Grid container alignItems='flex-end' justify='center' style={{ width: '100%' }} spacing={8}>
@@ -149,6 +184,51 @@ export default class App extends React.Component<object, State> {
                           </Button>
                         </Grid>
                     </Grid>
+
+                    <Slide in={this.state.showInfo} direction='down' unmountOnExit >
+                        <Card style={{
+                            position: 'absolute',
+                            right: '24px', // Padding of the AppBar
+                            top: '80px',
+                            width: '42vw',
+                            // maxWidth: '35vw',
+                            zIndex: 1101 // Just above the AppBar :P
+                        }}
+                        >
+                            <CardHeader
+                                title='Erläuterungen'
+                                subheader='Strandproblem'
+                                action={
+                                    <IconButton onClick={this.changeInfoVisibility}>
+                                        <i className='far fa-times'></i>
+                                    </IconButton>
+                                }
+                            />
+                            <CardContent
+                                style={{ textAlign: 'justify' }}
+                            >
+                                Kurze Beschreibung.
+                            </CardContent>
+                            <CardActions style={{ justifyContent: 'flex-end' }} >
+                                <IconButton
+                                    key={'addInfo' + this.state.showAdditionalInfo} // Force a rerender.
+                                    onClick={this.changeAdditionalInfoVisibility}
+                                >
+                                    <i
+                                        className={'far fa-angle-' + (this.state.showAdditionalInfo ? 'up' : 'down')}
+                                    />
+                                </IconButton>
+                            </CardActions>
+                            <Collapse in={this.state.showAdditionalInfo} timeout='auto' unmountOnExit>
+                                <CardContent style={{ overflowY: 'auto', maxHeight: '60vh' }} >
+                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                                </CardContent>
+                            </Collapse>
+                        </Card>
+                    </Slide>
 
                     <Zoom in={this.state.isSimulating || this.state.resultJsxs.length > 0} unmountOnExit >
                         <Paper square elevation={3} className='App-results'>
@@ -347,6 +427,17 @@ export default class App extends React.Component<object, State> {
         return true;
     }
 
+    private changeInfoVisibility() {
+        this.setState({
+            showInfo: !this.state.showInfo,
+            showAdditionalInfo: this.state.showInfo ? false : this.state.showAdditionalInfo
+        });
+    }
+
+    private changeAdditionalInfoVisibility() {
+        this.setState({ showAdditionalInfo: !this.state.showAdditionalInfo });
+    }
+
     private onSimulationStart() {
         if (!this.isValidInput(this.state.length, this.state.count)) {
             return;
@@ -377,12 +468,6 @@ export default class App extends React.Component<object, State> {
 
     private onSimulationAbort() {
         this.abortSimulation(true);
-    }
-
-    private onSortResetClicked() {
-        this.setState({
-            resultJsxs: this.generateJsxElements(this.state.results)
-        });
     }
 
     private simulate() {
