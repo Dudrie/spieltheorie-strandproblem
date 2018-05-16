@@ -102,10 +102,25 @@ export default class App extends React.Component<object, State> {
                                 >
                                     Spieltheorie - Strandproblem (v1.6)
                                 </Typography>
-                                <Typography variant='subheading' className='App-github'>
+                                {/* <Typography variant='subheading' className='App-github'>
                                     <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
-                                </Typography>
+                                </Typography> */}
                             </div>
+                            <Button
+                                variant='raised'
+                                color='primary'
+                                href='https://github.com/Dudrie/spieltheorie-strandproblem'
+                                target='blank'
+                                style={{
+                                    height: '40px',
+                                    color: '#fff',
+                                    textTransform: 'none',
+                                    marginRight: theme.spacing.unit + 'px',
+                                    backgroundColor: '#6e5494'
+                                }}
+                            >
+                                GitHub <i style={{ marginLeft: theme.spacing.unit }} className='fab fa-github' ></i>
+                            </Button>
                             <Tooltip
                                 title={
                                     <Typography variant='subheading' style={{ color: '#fff' }} >Mehr Informationen hier</Typography>
