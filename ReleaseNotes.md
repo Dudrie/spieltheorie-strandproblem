@@ -1,3 +1,4 @@
+# Release Notes
 ## v1.7
 - Erläuterungen hinzugefügt
 ## v1.6

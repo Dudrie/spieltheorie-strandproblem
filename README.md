@@ -4,27 +4,8 @@ Repository zum Webinterface, welches das Strandproblem simulieren kann. Dieses W
 # Live-Version
 Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). Große Eingabezahlen können allerdings etwas dauern, bis sie berechnet wurden.
 
-# Versionen
-## v1.7
-- Erläuterungen hinzugefügt
-## v1.6
-- Für die GUI wird nun die [Material-UI Bibliothek für React](https://material-ui-next.com/) genutzt
-- Anpassungen bei den Notifications
-## v1.5
-- Footer
-- Verbesserungen
-## v1.4
-- Es werden nun Kioskssymbole mit Nummern im Ergebnis angezeigt anstatt nur Nummern
-## v1.3
-- Berechnung mit Hilfe eines Entscheidungsbaums
-- Nur noch das beste Ergebnis wird ausgegeben
-## v1.2
-- Verbesserungen
-## v1.1
-- Filterfunktion
-- Verbesserungen
-## v1.0
-- Initial Release
+# Release Notes
+Die Release Notes sind in der [ReleaseNotes.md-Datei](https://github.com/Dudrie/spieltheorie-strandproblem/blob/master/ReleaseNotes.md) zu finden.
 
 # Technik (maxn - Algorithmus)
 Für die eingegebenen Daten wird das bestmögliche Ergebnis für alle Parteien berechnet. Dafür wird ein Entscheidungsbaum berechnet, der mit dem maxn-Algorithmus von Luckhardt und Irani erstellt wird (Quelle: [Multi-player alpha-beta pruning von Richard E. Korf](https://pdfs.semanticscholar.org/ec08/284de3ac57f72e3aa931881808c322be5edc.pdf)).
@@ -32,7 +13,7 @@ Für die eingegebenen Daten wird das bestmögliche Ergebnis für alle Parteien b
 # Geplante Features
 - [x] Simulation abbrechbar machen
 - [x] Simulation auf Basis eines Entscheidungsbaum o.ä.
-- [ ] Hinweise/Erläuterungen für den Nutzer
+- [x] Hinweise/Erläuterungen für den Nutzer
 
 # Contribute
 Das Webinterface basiert auf dem JS-Framework für UIs "React" (by Facebook) und ist fast vollständig in [Typescript](http://www.typescriptlang.org/) geschrieben. Der verwendete und hier erklärte Package-Manager ist [yarn](https://yarnpkg.com/lang/en/) - es kann aber genauso [npm](https://www.npmjs.com/) genutzt werden.
