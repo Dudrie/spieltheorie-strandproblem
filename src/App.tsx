@@ -97,7 +97,7 @@ export default class App extends React.Component<object, State> {
                                         fontSize: '1.8em'
                                     }}
                                 >
-                                    Spieltheorie - Strandproblem (v1.7)
+                                    Spieltheorie - Strandproblem
                                 </Typography>
                             </div>
                             <Button
@@ -234,7 +234,7 @@ export default class App extends React.Component<object, State> {
                             Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Dr. Eisermann)
                         </Typography>
                         <Typography className='footer-right' variant='subheading' style={{ color: '#fff' }}>
-                            <i className='far fa-copyright'></i> Sascha Skowronnek
+                            <i className='far fa-copyright'></i> Sascha Skowronnek - v1.8
                         </Typography>
                     </footer>
 

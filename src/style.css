@@ -20,9 +20,8 @@ body {
 
 footer {
     background-color: #222;
-    display: grid;
+    display: flex;
     align-content: center;
-    grid-template-columns: 1fr 180px;
     position: fixed;
     left: 0;
     bottom: 0;
@@ -33,12 +32,11 @@ footer {
 
 footer .footer-left {
     text-align: left;
-    grid-column: 1 / 1;
+    flex-grow: 1;
 }
 
 footer .footer-right {
     text-align: right;
-    grid-column: 2 / 2;
 }
 
 #root {
