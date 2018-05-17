@@ -205,7 +205,7 @@ export default class App extends React.Component<object, State> {
                                 position: 'absolute',
                                 right: '24px', // Padding of the AppBar
                                 top: '80px',
-                                width: '42vw',
+                                width: '55vw',
                                 // maxWidth: '35vw',
                                 zIndex: 1101 // Just above the AppBar :P
                             }} />
