@@ -1,4 +1,6 @@
 # Release Notes
+##v 1.8
+- Versionsnummer wurde in den Footer verschoben
 ## v1.7
 - Erläuterungen hinzugefügt
 ## v1.6
