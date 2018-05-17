@@ -5,6 +5,8 @@ Repository zum Webinterface, welches das Strandproblem simulieren kann. Dieses W
 Link zur [Live-Version](https://dudrie.github.io/spieltheorie-strandproblem/). Große Eingabezahlen können allerdings etwas dauern, bis sie berechnet wurden.
 
 # Versionen
+## v1.7
+- Erläuterungen hinzugefügt
 ## v1.6
 - Für die GUI wird nun die [Material-UI Bibliothek für React](https://material-ui-next.com/) genutzt
 - Anpassungen bei den Notifications
