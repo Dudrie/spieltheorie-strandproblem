@@ -34,7 +34,6 @@ interface State {
     showInfo: boolean;
 }
 
-// TODO: Erläuterungen einbauen.
 // TODO: JSDoc-Kommentare
 export default class App extends React.Component<object, State> {
     private readonly DEF_LENGTH = 11;
@@ -98,11 +97,8 @@ export default class App extends React.Component<object, State> {
                                         fontSize: '1.8em'
                                     }}
                                 >
-                                    Spieltheorie - Strandproblem (v1.6)
+                                    Spieltheorie - Strandproblem (v1.7)
                                 </Typography>
-                                {/* <Typography variant='subheading' className='App-github'>
-                                    <a href='https://github.com/Dudrie/spieltheorie-strandproblem'><i className='fab fa-github'></i> GitHub</a>
-                                </Typography> */}
                             </div>
                             <Button
                                 variant='raised'
