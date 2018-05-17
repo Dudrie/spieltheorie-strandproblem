@@ -1,8 +1,9 @@
-import { AppBar, Button, Card, CardContent, CardHeader, Grid, IconButton, MuiThemeProvider, Paper, TextField, Toolbar, Tooltip, Typography, Zoom, createMuiTheme, Slide, CardActions, Collapse } from 'material-ui';
+import { AppBar, Button, Grid, MuiThemeProvider, Paper, Slide, TextField, Toolbar, Tooltip, Typography, Zoom, createMuiTheme } from 'material-ui';
 import * as React from 'react';
 import { RefObject } from 'react';
 import * as NotifcationSystem from 'react-notification-system';
 import { WorkerInputData, WorkerReturnData } from './SimulationWorker';
+import { InfoCardBeach } from './components/InfoCardBeach';
 import './style.css';
 
 // Register the worker with the worker-loader (no replacement for this require-import found)
@@ -31,7 +32,6 @@ interface State {
     length: number;
     count: number;
     showInfo: boolean;
-    showAdditionalInfo: boolean;
 }
 
 // TODO: Erläuterungen einbauen.
@@ -65,8 +65,7 @@ export default class App extends React.Component<object, State> {
             countStr: this.DEF_COUNT + '',
             length: this.DEF_LENGTH,
             count: this.DEF_COUNT,
-            showInfo: false,
-            showAdditionalInfo: false
+            showInfo: false
         };
 
         this.notifcationSystem = React.createRef();
@@ -78,7 +77,6 @@ export default class App extends React.Component<object, State> {
         this.onSimulationAbort = this.onSimulationAbort.bind(this);
         this.onSimulationReset = this.onSimulationReset.bind(this);
         this.changeInfoVisibility = this.changeInfoVisibility.bind(this);
-        this.changeAdditionalInfoVisibility = this.changeAdditionalInfoVisibility.bind(this);
     }
 
     render() {
@@ -201,48 +199,16 @@ export default class App extends React.Component<object, State> {
                     </Grid>
 
                     <Slide in={this.state.showInfo} direction='down' unmountOnExit >
-                        <Card style={{
-                            position: 'absolute',
-                            right: '24px', // Padding of the AppBar
-                            top: '80px',
-                            width: '42vw',
-                            // maxWidth: '35vw',
-                            zIndex: 1101 // Just above the AppBar :P
-                        }}
-                        >
-                            <CardHeader
-                                title='Erläuterungen'
-                                subheader='Strandproblem'
-                                action={
-                                    <IconButton onClick={this.changeInfoVisibility}>
-                                        <i className='far fa-times'></i>
-                                    </IconButton>
-                                }
-                            />
-                            <CardContent
-                                style={{ textAlign: 'justify' }}
-                            >
-                                Kurze Beschreibung.
-                            </CardContent>
-                            <CardActions style={{ justifyContent: 'flex-end' }} >
-                                <IconButton
-                                    key={'addInfo' + this.state.showAdditionalInfo} // Force a rerender.
-                                    onClick={this.changeAdditionalInfoVisibility}
-                                >
-                                    <i
-                                        className={'far fa-angle-' + (this.state.showAdditionalInfo ? 'up' : 'down')}
-                                    />
-                                </IconButton>
-                            </CardActions>
-                            <Collapse in={this.state.showAdditionalInfo} timeout='auto' unmountOnExit>
-                                <CardContent style={{ overflowY: 'auto', maxHeight: '60vh' }} >
-                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-                                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-                                </CardContent>
-                            </Collapse>
-                        </Card>
+                        <InfoCardBeach
+                            onCloseClick={this.changeInfoVisibility}
+                            style={{
+                                position: 'absolute',
+                                right: '24px', // Padding of the AppBar
+                                top: '80px',
+                                width: '42vw',
+                                // maxWidth: '35vw',
+                                zIndex: 1101 // Just above the AppBar :P
+                            }} />
                     </Slide>
 
                     <Zoom in={this.state.isSimulating || this.state.resultJsxs.length > 0} unmountOnExit >
@@ -445,12 +411,7 @@ export default class App extends React.Component<object, State> {
     private changeInfoVisibility() {
         this.setState({
             showInfo: !this.state.showInfo,
-            showAdditionalInfo: this.state.showInfo ? false : this.state.showAdditionalInfo
         });
-    }
-
-    private changeAdditionalInfoVisibility() {
-        this.setState({ showAdditionalInfo: !this.state.showAdditionalInfo });
     }
 
     private onSimulationStart() {
