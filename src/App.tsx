@@ -88,18 +88,18 @@ export default class App extends React.Component<object, State> {
                 <div className='App'>
                     <AppBar position='static' className='header' style={{ backgroundColor: '#222' }} >
                         <Toolbar style={{ height: '100%' }}>
-                            <div style={{ flex: 1 }}>
-                                <Typography
-                                    variant='display1'
-                                    style={{
-                                        color: '#fff',
-                                        marginBottom: '5px',
-                                        fontSize: '1.8em'
-                                    }}
-                                >
-                                    Spieltheorie - Strandproblem
-                                </Typography>
-                            </div>
+                            <Typography
+                                variant='display1'
+                                component='div'
+                                style={{
+                                    flex: 1,
+                                    color: '#fff',
+                                    marginBottom: '5px',
+                                    fontSize: '1.8em'
+                                }}
+                            >
+                                Spieltheorie - Strandproblem
+                            </Typography>
                             <Button
                                 variant='raised'
                                 color='primary'
@@ -110,10 +110,11 @@ export default class App extends React.Component<object, State> {
                                     color: '#fff',
                                     textTransform: 'none',
                                     marginRight: theme.spacing.unit + 'px',
-                                    backgroundColor: '#6e5494'
+                                    backgroundColor: '#6e5494',
+                                    zIndex: 1
                                 }}
                             >
-                                GitHub <i style={{ marginLeft: theme.spacing.unit }} className='fab fa-github' ></i>
+                                GitHub<i style={{ marginLeft: theme.spacing.unit }} className='fab fa-github' ></i>
                             </Button>
                             <Tooltip
                                 title={
@@ -131,7 +132,7 @@ export default class App extends React.Component<object, State> {
                                     }}
                                     onClick={this.changeInfoVisibility}
                                 >
-                                    Info <i style={{ marginLeft: theme.spacing.unit }} className='fas fa-info' ></i>
+                                    Info<i style={{ marginLeft: theme.spacing.unit }} className='fas fa-info' ></i>
                                 </Button>
                             </Tooltip>
                         </Toolbar>
@@ -234,7 +235,7 @@ export default class App extends React.Component<object, State> {
                             Universität Stuttgart - "Spieltheorie und ökonomisches Verhalten" (Hr. Prof. Dr. Eisermann)
                         </Typography>
                         <Typography className='footer-right' variant='subheading' style={{ color: '#fff' }}>
-                            <i className='far fa-copyright'></i> Sascha Skowronnek - v1.8
+                            <i className='far fa-copyright'></i> Sascha Skowronnek - <a href='https://github.com/Dudrie/spieltheorie-strandproblem/blob/master/ReleaseNotes.md' target='blank' >v1.8<i style={{ marginLeft: theme.spacing.unit }} className='far fa-external-link' ></i></a>
                         </Typography>
                     </footer>
 

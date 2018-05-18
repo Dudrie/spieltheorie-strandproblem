@@ -6,14 +6,13 @@ body {
     margin: 0;
     padding: 0;
     font-family: "Roboto", sans-serif;
-    /* overflow-x: hidden; */
+}
+
+a, a:visited {
+    color: #fff;
 }
 
 .header {
-    /* display: grid;
-    justify-content: center;
-    align-content: center;
-    text-align: center; */
     margin-bottom: 20px;
     height: 100px;
 }
@@ -48,7 +47,6 @@ footer .footer-right {
     flex-direction: column;
     text-align: center;
     justify-content: center;
-    /* justify-items: center; */
 }
 
 .App-title {
@@ -136,35 +134,4 @@ footer .footer-right {
 .App-results .filtered-by {
     color: rgb(72, 72, 182);
     font-weight: bold;
-}
-
-.div-filter {
-    justify-self: center;
-    padding: 5px;
-    width: 95%;
-    border: 1px solid gray;
-}
-
-.div-filter>* {
-    margin-right: 8px;
-}
-
-.div-filter:last-child {
-    margin-right: 0px;
-    color: purple;
-}
-
-.div-filter .filter-input {
-    width: 65px;
-    text-align: right;
-}
-
-.App-error {
-    margin: 15px;
-    padding: 10px;
-    color: #fff;
-    font-weight: bold;
-    justify-self: center;
-    width: 80vw;
-    background: rgb(163, 17, 46);
 }
