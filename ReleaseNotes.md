@@ -1,5 +1,5 @@
 # Release Notes
-##v 1.8
+## v1.8
 - Versionsnummer wurde in den Footer verschoben und ist ein Link.
 ## v1.7
 - Erläuterungen hinzugefügt
