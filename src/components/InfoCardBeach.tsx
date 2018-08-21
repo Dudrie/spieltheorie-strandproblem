@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, IconButton, Typography } from 'material-ui';
+import { Card, CardContent, CardHeader, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, IconButton, Typography } from '@material-ui/core';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 

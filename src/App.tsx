@@ -1,4 +1,4 @@
-import { AppBar, Button, Grid, MuiThemeProvider, Paper, Slide, TextField, Toolbar, Tooltip, Typography, Zoom, createMuiTheme } from 'material-ui';
+import { AppBar, Button, Grid, MuiThemeProvider, Paper, Slide, TextField, Toolbar, Tooltip, Typography, Zoom, createMuiTheme } from '@material-ui/core';
 import * as React from 'react';
 import { RefObject } from 'react';
 import * as NotifcationSystem from 'react-notification-system';
